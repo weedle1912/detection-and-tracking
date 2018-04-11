@@ -24,7 +24,7 @@ from object_detection.utils import visualization_utils as vis_util
 # * Load a (frozen) TensorFlow model into memory
 def load_tf_graph(model_name):
     cwd_path = os.getcwd()
-    path_to_ckpt = os.path.join(cwd_path, 'object_detection', model_name, 'frozen_inference_graph.pb')
+    path_to_ckpt = os.path.join(cwd_path, 'models', model_name, 'frozen_inference_graph.pb')
     
     detection_graph = tf.Graph()
     with detection_graph.as_default():
