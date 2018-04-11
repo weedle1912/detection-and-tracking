@@ -62,6 +62,8 @@ def run_detection(vidcap, detection_graph, category_index):
             while( vidcap.isOpened() ):
                 # Get frame
                 succsess, image_np = vidcap.read()
+                if not succsess:
+                    break
 
                 # Resize
                 h, w = image_np.shape[:2]
