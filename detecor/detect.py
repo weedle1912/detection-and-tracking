@@ -50,9 +50,8 @@ def get_label_index(label_name, num_classes):
     return category_index
 
 # ** DETECTION
-
-def run_inference_for_single_image(image, graph):
-    with graph.as_default():
+def run_detection(vidcap, detection_graph, category_index):
+    with detection_graph.as_default():
         with tf.Session() as sess:
             # Get handles to input and output tensors
             ops = tf.get_default_graph().get_operations()
@@ -60,6 +59,25 @@ def run_inference_for_single_image(image, graph):
             tensor_dict = get_handles()
             image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
 
+            while( vidcap.isOpened() ):
+                # Get frame
+                succsess, image_np = vidcap.read()
+
+                # Resize
+                h, w = image_np.shape[:2]
+                image_np = cv2.resize(image_np,(int(w*(480.0/h)), 480), interpolation = cv2.INTER_AREA)
+
+                # Expand dimension. Model expects shape: [1, None, None, 3]
+                image_expanded = np.expand_dims(image_np, axis=0)
+                # Run inference
+                t = time.time()
+                output_dict = sess.run(
+                    tensor_dict,
+                    feed_dict={image_tensor: image_expanded}
+                )    
+                # Display FPS
+                sys.stdout.write("Process: %d FPS\r" % (1/(time.time()-t)) )
+                sys.stdout.flush()
 
                 # All outputs are float32 numpy arrays, so convert types to appropriate
                 output_dict = convert_appropriate(output_dict)
