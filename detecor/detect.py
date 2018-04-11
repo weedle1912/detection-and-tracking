@@ -66,8 +66,10 @@ def run_detection(vidcap, detection_graph, category_index):
                     break
 
                 # Resize
-                h, w = image_np.shape[:2]
-                image_np = cv2.resize(image_np,(int(w*(480.0/h)), 480), interpolation = cv2.INTER_AREA)
+                img_h, img_w = image_np.shape[:2]
+                img_w = int(img_w*(480.0/img_h))
+                img_h = 480
+                image_np = cv2.resize(image_np,(img_w, img_h), interpolation = cv2.INTER_AREA)
 
                 # Expand dimension. Model expects shape: [1, None, None, 3]
                 image_expanded = np.expand_dims(image_np, axis=0)
@@ -77,9 +79,16 @@ def run_detection(vidcap, detection_graph, category_index):
                     tensor_dict,
                     feed_dict={image_tensor: image_expanded}
                 )    
-                # Display FPS
-                sys.stdout.write("Process: %d FPS\r" % (1/(time.time()-t)) )
-                sys.stdout.flush()
+                # Display FPS in image
+                cv2.putText(
+                    image_np,
+                    ("FPS: %d" % (1/(time.time()-t))),
+                    (10, img_h - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.7,
+                    (0,0,255), #Red
+                    2
+                )
 
                 # All outputs are float32 numpy arrays, so convert types to appropriate
                 output_dict = convert_appropriate(output_dict)
