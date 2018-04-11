@@ -9,7 +9,7 @@ import logo
 MODEL_NAME = 'ssd_inception_v2_coco_2017_11_17'
 LABEL_NAME = 'mscoco_label_map'
 NUM_CLASSES = 90
-VIDEO_FILE = '/home/vetlebg/Videos/BlueAngels.mp4'
+VIDEO_FILE = '../videos/BlueAngels.mp4'
 
 def app():
     # Load model graph
