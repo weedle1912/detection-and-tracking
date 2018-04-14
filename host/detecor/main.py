@@ -11,7 +11,7 @@ MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29'
 #MODEL_NAME = 'faster_rcnn_inception_v2_coco_2018_01_28'
 LABEL_NAME = 'mscoco_label_map'
 NUM_CLASSES = 90
-VIDEO_FILE = '../videos/BlueAngels.mp4'
+VIDEO_FILE = '../../videos/BlueAngels.mp4'
 
 def app():
     # Load model graph
