@@ -1,5 +1,5 @@
 ## Target: NVIDIA Jetson TX2 Development Kit
-### 1. Description
+### 1 Description
 **Purpose**:  
 System deployment.
 
@@ -9,17 +9,19 @@ System deployment.
 * TensorRT 3.0
 * OpenCV 3.3.1
 
-### 2. Optimize performance on the TX2
-Maximize jetson performance by setting static max frequency to CPU, GPU and EMC clocks, with the `jetson_clocks.sh` script:
-1. Store current settings (\[file\] is optional, default is {$HOME}/l4t_dfs.conf):  
-`$ ~/jetson_clocks.sh --store [file]`
-2. Set static max frequency:  
+### 2 Optimize performance on the TX2
+#### 2.1 Max frequency to CPU, GPU and EMC clocks
+Maximize jetson performance by setting static max frequency to CPU, GPU and EMC clocks, with the `~/jetson_clocks.sh` script:
+1. Set max:  
+1.1 Store current settings (\[file\] is optional, default is {$HOME}/l4t_dfs.conf):  
+`$ ~/jetson_clocks.sh --store [file]`  
+1.2 Set static max frequency:  
 `$ ~/jetson_clocks.sh`  
 
-Restore previously stored settings:     
+2. Restore previously stored settings:  
 `$ ~/jetson_clocks.sh --restore [file]`
 
-### 3. Different CPU and GPU modes
+#### 2.2 Specify different CPU and GPU modes
 With the command line tool `nvpmodel`, the TX2 can use different power modes for CPU and GPU frequencies, as well as CPU core activation:  
 `$ sudo nvpmodel -m [mode]`  
 
