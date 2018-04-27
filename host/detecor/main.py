@@ -4,7 +4,7 @@ import os
 import time
 
 import detect
-import logo
+import ascii_art as art
 
 #MODEL_NAME = 'ssd_inception_v2_coco_2017_11_17'
 MODEL_NAME = 'ssd_mobilenet_v2_coco_2018_03_29'
@@ -36,5 +36,6 @@ def app():
 
 if __name__ == '__main__':
     os.system('clear')
-    logo.DETECTION('0.0.1')
+    art.printAsciiArt('Detection')
+    print('v0.0.1 (C) weedle1912')
     app()
