@@ -54,8 +54,6 @@ def run_detection(vidcap, detection_graph, category_index):
     with detection_graph.as_default():
         with tf.Session() as sess:
             # Get handles to input and output tensors
-            ops = tf.get_default_graph().get_operations()
-            all_tensor_names = {output.name for op in ops for output in op.outputs}
             tensor_dict = get_handles()
             image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
 
