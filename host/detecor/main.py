@@ -5,6 +5,7 @@ import time
 
 import detect
 from detector import Detector
+from framehandler import FrameHandler
 import ascii_art as art
 
 #MODEL_NAME = 'ssd_inception_v2_coco_2017_11_17'
@@ -54,16 +55,30 @@ def app2():
             print("New detections")
         else:
             print("No")
-    
 
     cap.release()
     cv2.destroyAllWindows()
 
+def test():
+    handler = FrameHandler()
+    handler.start()
 
+    while True:
+        handler.wait_new_frame()
+        ok, frame = handler.read()
+        if not ok:
+            break
+        cv2.imshow('frame', frame)
+        if ( cv2.waitKey(1) & 0xFF == ord('q') ):
+            break
+    
+    handler.stop()
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     os.system('clear')
     art.printAsciiArt('Detection')
     print('v0.0.1 (C) weedle1912')
     #app()
-    app2()
+    #app2()
+    test()
