@@ -1,14 +1,14 @@
+# ********************
+# * Module: Detector *
+# *                  *
+# ********************
+
 import numpy as np 
 import os
-import six.moves.urllib as urllib
-import sys
 import cv2
 import tensorflow as tf 
 import threading
 import copy
-
-from collections import defaultdict
-from io import StringIO
 
 from object_detection.utils import ops as utils_ops
 
