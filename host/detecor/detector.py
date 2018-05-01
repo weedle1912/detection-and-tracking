@@ -20,28 +20,38 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util 
 
 class Detector:
-    def __init__(self, cap="", model_name='', label_name='', num_classes=0):
+    def __init__(self, cap='', model_name='', label_name='', num_classes=0):
         self.graph = load_tf_graph(model_name)
         self.category_index = get_label_index(label_name, num_classes)
         self.cap = cap
-        self.detections = []
-        self.isDetection = False
-        self.started = False
+        self.frame_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.frame_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.detections = {}
+        self.running = False
+        self.new_detection = threading.Event()
         self.read_lock = threading.Lock()
     
     def start(self):
-        if self.started:
-            print('[!] Detection thread already started.')
+        if self.running:
+            print('[!] Detection is already started.')
             return None
-        self.started = True
+        print('[d] Starting.')
+        self.running = True
         self.thread = threading.Thread(name='Detection', target=self.run, args=())
         self.thread.start()
         return self
     
+    def isRunning(self):
+        return self.running
+    
+    def wait(self):
+        self.new_detection.wait()
+    
     def stop(self):
-        print("Detector: Stopping")
-        self.started = False
-        self.thread.join()
+        print('[d] Stopping.')
+        if self.running:
+            self.running = False
+            self.thread.join()
     
     def run(self):
         with self.graph.as_default():
@@ -50,17 +60,11 @@ class Detector:
                 tensor_dict = get_handles()
                 image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
 
-                while( self.cap.isOpened() ):
+                while( self.running ):
                     # Get frame
                     ok, image_np = self.cap.read()
                     if not ok:
                         break
-
-                    # Resize
-                    img_h, img_w = image_np.shape[:2]
-                    img_w = int(img_w*(480.0/img_h))
-                    img_h = 480
-                    image_np = cv2.resize(image_np,(img_w, img_h), interpolation = cv2.INTER_AREA)
 
                     # Expand dimension. Model expects shape: [1, None, None, 3]
                     image_expanded = np.expand_dims(image_np, axis=0)
@@ -76,19 +80,28 @@ class Detector:
                     # Update detection
                     with self.read_lock:
                         self.detections = output_dict
-                        self.isDetection = True
-        self.stop()
+                    self.new_detection.set()
+        self.running = False
     
     def get_detections(self):
         with self.read_lock:
-            if self.isDetection:
-                detections = copy.deepcopy(self.detections)
-                status = True
-                self.isDetection = False
-            else:
-                detections = {}
-                status = False
-        return status, detections
+            detections = copy.deepcopy(self.detections)
+            self.new_detection.clear()
+        num = int(detections['num_detections'])
+        return num, detections
+    
+    def get_bboxes(self):
+        with self.read_lock:
+            detections = copy.deepcopy(self.detections)
+        bboxes = []
+        if detections:
+            num = int(detections['num_detections'])
+            for i in range(num):
+                ymin, xmin, ymax, xmax = detections['detection_boxes'][i]
+                bboxes.append([(int(xmin*self.frame_width), int(ymin*self.frame_height)), (int(xmax*self.frame_width), int(ymax*self.frame_height))])
+        return bboxes
+
+
 
 # * Load frozen TF model
 def load_tf_graph(model_name):
