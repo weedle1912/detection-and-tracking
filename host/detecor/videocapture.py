@@ -1,5 +1,5 @@
 # *******************************************************
-# * Module: Frame Handler
+# * Module: Video Capture
 # * Inspired by repo: gilbertfrancois/video-capture-async
 # *
 # *******************************************************
@@ -8,15 +8,16 @@ import cv2
 import threading
 import time
 
-class FrameHandler:
-    def __init__(self, src=0, width=640, height=480):
+class VideoCaptureAsync:
+    def __init__(self, src=0, width=640, height=480, fps=30):
         self.src = src
         self.cap = cv2.VideoCapture(self.src)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.fps = fps
         self.grabbed, self.frame = self.cap.read()
         self.started = False
-        self.new_frame = threading.Event()
+        self.new_frame = True
         self.read_lock = threading.Lock()
 
     def set(self, var1, var2):
@@ -27,10 +28,11 @@ class FrameHandler:
 
     def start(self):
         if self.started:
-            print('[!] FrameHandler thread already started.')
+            print('[!] Video capture already started.')
             return None
+        print('[c] Starting.')
         self.started = True
-        self.thread = threading.Thread(name='Frame handler', target=self.update, args=())
+        self.thread = threading.Thread(name='Video Capture', target=self.update, args=())
         self.thread.start()
         return self
 
@@ -40,12 +42,12 @@ class FrameHandler:
             with self.read_lock:
                 self.grabbed = grabbed
                 self.frame = frame
-                self.new_frame.set()
+                self.new_frame = True
             # Sleep depend on FPS
-            time.sleep(1/30.0)
+            time.sleep(1.0/self.fps)
     
-    def wait_new_frame(self):
-        self.new_frame.wait()
+    def isNewframe(self):
+        return self.new_frame
 
     def read(self):
         with self.read_lock:
@@ -55,10 +57,11 @@ class FrameHandler:
             else:
                 frame = None
                 grabbed = False
-            self.new_frame.clear()
+            self.new_frame = False
         return grabbed, frame
 
     def stop(self):
+        print('[c] Stopping.')
         self.started = False
         self.thread.join()
 
