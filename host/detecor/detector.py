@@ -24,9 +24,10 @@ class Detector:
         self.graph = load_tf_graph(model_name)
         self.category_index = get_label_index(label_name, num_classes)
         self.cap = cap
-        self.frame_width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.frame_height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.frame_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.frame_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.detections = {}
+        self.fps = 0
         self.running = False
         self.new_detection = threading.Event()
         self.read_lock = threading.Lock()
@@ -59,7 +60,6 @@ class Detector:
                 # Get handles to input and output tensors
                 tensor_dict = get_handles()
                 image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
-
                 while( self.running ):
                     # Get frame
                     ok, image_np = self.cap.read()
@@ -69,10 +69,12 @@ class Detector:
                     # Expand dimension. Model expects shape: [1, None, None, 3]
                     image_expanded = np.expand_dims(image_np, axis=0)
                     # Run inference
+                    timer = cv2.getTickCount()
                     output_dict = sess.run(
                         tensor_dict,
                         feed_dict={image_tensor: image_expanded}
-                    )    
+                    )
+                    fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)    
 
                     # All outputs are float32 numpy arrays, so convert types to appropriate
                     output_dict = convert_appropriate(output_dict)
@@ -80,6 +82,7 @@ class Detector:
                     # Update detection
                     with self.read_lock:
                         self.detections = output_dict
+                        self.fps = fps
                     self.new_detection.set()
         self.running = False
     
@@ -89,19 +92,6 @@ class Detector:
             self.new_detection.clear()
         num = int(detections['num_detections'])
         return num, detections
-    
-    def get_bboxes(self):
-        with self.read_lock:
-            detections = copy.deepcopy(self.detections)
-        bboxes = []
-        if detections:
-            num = int(detections['num_detections'])
-            for i in range(num):
-                ymin, xmin, ymax, xmax = detections['detection_boxes'][i]
-                bboxes.append([(int(xmin*self.frame_width), int(ymin*self.frame_height)), (int(xmax*self.frame_width), int(ymax*self.frame_height))])
-        return bboxes
-
-
 
 # * Load frozen TF model
 def load_tf_graph(model_name):
