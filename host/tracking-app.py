@@ -2,6 +2,8 @@ import os
 import cv2
 import time
 
+import detector.ascii_art as art 
+
 from detector.detector import Detector
 from detector.videocapture import VideoCaptureAsync
 from tracker.tracker import Tracker
@@ -35,8 +37,6 @@ def test():
     detector.wait() # First detection is slow
     cap.start()
 
-    count = 0
-
     while True:
         ok, frame = cap.read()
         if not ok:
@@ -46,10 +46,16 @@ def test():
         bbox_d = get_track_coord(detections)
         draw_bbox(frame, bbox_d, (0,255,0)) # Detection - green
 
-        if (not init) or new:        
+        if not init:        
             tracker = Tracker()
             tracker.init(frame, bbox_d)
             init = True
+        elif new:
+            buffer = cap.read_frame_buffer()
+            tracker = Tracker()
+            tracker.init(buffer.pop(0), bbox_d)
+            for f in buffer:
+                tracker.update(f)
         else:
             tracker.update(frame)
 
@@ -60,8 +66,6 @@ def test():
         cv2.imshow('Frame', frame)
         if cv2.waitKey(1) == 27:
             break
-        
-        count += 1
     
     detector.stop()
     cap.stop()
@@ -86,4 +90,7 @@ def get_track_coord(det_dict):
     return (x,y,w,h)
 
 if __name__ == '__main__':
+    os.system('clear')
+    art.printAsciiArt('Tracking')
+    print('Tracker v0.0.1 (c) weedle1912')
     test()
