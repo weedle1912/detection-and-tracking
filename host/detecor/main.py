@@ -3,9 +3,7 @@ import cv2
 import os
 import time
 
-import detect
 from detector import Detector
-from framehandler import FrameHandler
 from videocapture import VideoCaptureAsync
 import ascii_art as art
 
@@ -25,22 +23,19 @@ def app():
     cap = VideoCaptureAsync(VIDEO_FILE, FRAME_WIDTH, FRAME_HEIGHT)
     detector = Detector(cap, MODEL_NAMES[1], LABEL_NAME, NUM_CLASSES)
 
-    cap.start()
     detector.start()
-    
-    bboxes = []
+    detector.wait() # First detection is slow
+    cap.start()
 
     while True:
         ok, frame = cap.read()
         if not ok:
             break
         
-        bboxes_new = detector.get_bboxes()
-        if bboxes_new:
-            bboxes = bboxes_new
-
-        for i in range(len(bboxes)):
-            cv2.rectangle(frame,bboxes[i][0],bboxes[i][1],(255,0,0),2)
+        num, detections = detector.get_detections()
+        draw_detections(frame, detections, num)
+        
+        #cv2.putText(frame,'fps: %d'%fps,(10,30), cv2.FONT_HERSHEY_SIMPLEX, 0.8,(255,255,255),2,cv2.LINE_AA)
         
         cv2.imshow('Frame', frame)
         if cv2.waitKey(1) == 27:
@@ -49,6 +44,13 @@ def app():
     detector.stop()
     cap.stop()
     cv2.destroyAllWindows()
+
+def draw_detections(img, det_dict, n):
+    for i in range(n):
+        #[ymin, xmin, ymax, xmax]
+        ymin, xmin, ymax, xmax = det_dict['detection_boxes'][i]
+        bbox = [(int(xmin*FRAME_WIDTH), int(ymin*FRAME_HEIGHT)), (int(xmax*FRAME_WIDTH), int(ymax*FRAME_HEIGHT))]
+        cv2.rectangle(img,bbox[0],bbox[1],(255,0,0),2)
 
 if __name__ == '__main__':
     os.system('clear')
