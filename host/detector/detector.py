@@ -29,6 +29,7 @@ class Detector:
         self.detections = {}
         self.fps = 0
         self.running = False
+        self.isNew = False
         self.new_detection = threading.Event()
         self.read_lock = threading.Lock()
     
@@ -82,6 +83,7 @@ class Detector:
                     # Update detection
                     with self.read_lock:
                         self.detections = output_dict
+                        self.isNew = True
                         self.fps = fps
                     self.new_detection.set()
         self.running = False
@@ -89,9 +91,10 @@ class Detector:
     def get_detections(self):
         with self.read_lock:
             detections = copy.deepcopy(self.detections)
+            status = self.isNew
+            self.isNew = False
             self.new_detection.clear()
-        num = int(detections['num_detections'])
-        return num, detections
+        return status, detections
 
 # * Load frozen TF model
 def load_tf_graph(model_path):
