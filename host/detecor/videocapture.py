@@ -12,8 +12,8 @@ class VideoCaptureAsync:
     def __init__(self, src=0, width=640, height=480, fps=30):
         self.src = src
         self.cap = cv2.VideoCapture(self.src)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+        self.width = width
+        self.height = height
         self.fps = fps
         self.grabbed, self.frame = self.cap.read()
         self.started = False
@@ -39,6 +39,8 @@ class VideoCaptureAsync:
     def update(self):
         while self.started:
             grabbed, frame = self.cap.read()
+            if grabbed:
+                frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
             with self.read_lock:
                 self.grabbed = grabbed
                 self.frame = frame
