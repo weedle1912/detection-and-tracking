@@ -74,6 +74,10 @@ class VideoCaptureAsync:
             buffer = copy.deepcopy(self.frame_buffer)
             self.frame_buffer = []
         return buffer
+    
+    def clear_frame_buffer(self):
+        with self.buffer_lock:
+            self.frame_buffer = []
 
     def stop(self):
         print('[c] Stopping.')
