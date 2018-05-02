@@ -4,6 +4,7 @@
 # *
 # *******************************************************
 
+import numpy as np
 import cv2
 import threading
 import time
@@ -15,7 +16,9 @@ class VideoCaptureAsync:
         self.width = width
         self.height = height
         self.fps = fps
-        self.grabbed, self.frame = self.cap.read()
+        #self.grabbed, self.frame = self.cap.read()
+        self.grabbed = True
+        self.frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.started = False
         self.new_frame = True
         self.read_lock = threading.Lock()

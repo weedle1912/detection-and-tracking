@@ -20,7 +20,7 @@ FRAME_HEIGHT = 480
 
 def app():
     print('[i] Init.')
-    cap = VideoCaptureAsync(VIDEO_FILE, FRAME_WIDTH, FRAME_HEIGHT)
+    cap = VideoCaptureAsync(VIDEO_FILE, FRAME_WIDTH, FRAME_HEIGHT, 30)
     detector = Detector(cap, MODEL_NAMES[1], LABEL_NAME, NUM_CLASSES)
 
     detector.start()
