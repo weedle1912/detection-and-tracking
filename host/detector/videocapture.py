@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 import threading
 import time
+import copy
 
 class VideoCaptureAsync:
     def __init__(self, src=0, width=640, height=480, fps=30):
@@ -16,11 +17,12 @@ class VideoCaptureAsync:
         self.width = width
         self.height = height
         self.fps = fps
-        #self.grabbed, self.frame = self.cap.read()
         self.grabbed = True
         self.frame = np.zeros((self.height, self.width, 3), np.uint8)
+        self.frame_buffer = []
         self.started = False
         self.new_frame = True
+        self.buffer_lock = threading.Lock()
         self.read_lock = threading.Lock()
 
     def set(self, var1, var2):
@@ -48,6 +50,8 @@ class VideoCaptureAsync:
                 self.grabbed = grabbed
                 self.frame = frame
                 self.new_frame = True
+            with self.buffer_lock:
+                self.frame_buffer.append(frame)
             # Sleep depend on FPS
             time.sleep(1.0/self.fps)
     
@@ -64,6 +68,12 @@ class VideoCaptureAsync:
                 grabbed = False
             self.new_frame = False
         return grabbed, frame
+
+    def read_frame_buffer(self):
+        with self.buffer_lock:
+            buffer = copy.deepcopy(self.frame_buffer)
+            self.frame_buffer = []
+        return buffer
 
     def stop(self):
         print('[c] Stopping.')
