@@ -54,11 +54,15 @@ def test():
             tracker.init(frame, bbox_d)
             init = True
         elif new:
-            buffer = cap.read_frame_buffer()
-            tracker = Tracker()
-            tracker.init(buffer.pop(0), bbox_d)
-            for f in buffer:
-                tracker.update(f)
+            if detections['num_detections'] == 0:
+                cap.clear_frame_buffer()
+            else:
+                buffer = cap.read_frame_buffer()
+                if buffer:
+                    tracker = Tracker()
+                    tracker.init(buffer.pop(0), bbox_d)
+                    for f in buffer:
+                        tracker.update(f)
         else:
             tracker.update(frame)
 
