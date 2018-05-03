@@ -20,6 +20,8 @@ FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
 
+BGR = {'green':(0,255,0), 'orange':(0,153,255)}
+
 def test():
     cwd = os.getcwd()
     # Path to checkpoint (ckpt)
@@ -43,8 +45,9 @@ def test():
             break
 
         new, detections = detector.get_detections()
+        FPS_d = detections['FPS']
         bbox_d = get_track_coord(detections)
-        draw_bbox(frame, bbox_d, (0,255,0)) # Detection - green
+        draw_bbox(frame, bbox_d, BGR['green']) # Detection - green
 
         if not init:        
             tracker = Tracker()
@@ -59,10 +62,12 @@ def test():
         else:
             tracker.update(frame)
 
-        bbox_t = tracker.get_bbox()
+        bbox_t, FPS_t = tracker.get_bbox()
 
-        draw_bbox(frame, bbox_t, (0,153,255)) # Tracking - orange
-        
+        draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
+
+        draw_footer(frame, FPS_d, FPS_t)
+
         cv2.imshow('Frame', frame)
         if cv2.waitKey(1) == 27:
             break
@@ -80,6 +85,10 @@ def draw_detections(img, det_dict, n):
 
 def draw_bbox(frame, bbox, color):
     cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
+
+def draw_footer(img, fps_d, fps_t): 
+    cv2.putText(img,( 'FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['green'],1,cv2.LINE_AA)
+    cv2.putText(img,( 'FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['orange'],1,cv2.LINE_AA)
 
 def get_track_coord(det_dict):
     ymin, xmin, ymax, xmax = det_dict['detection_boxes'][0]

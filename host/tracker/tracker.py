@@ -10,6 +10,7 @@ class Tracker:
     def __init__(self, tracker_type='MEDIANFLOW'):
         self.tracker_type = tracker_type
         self.bbox = (0,0,0,0)
+        self.fps = 0
         self.read_lock = threading.Lock()
 
     def init(self, frame, bbox):
@@ -23,15 +24,19 @@ class Tracker:
         self.tracker = setTrackerType(self.tracker_type)
     
     def update(self, frame):
+        t = cv2.getTickCount()
         ok, bbox = self.tracker.update(frame)
+        fps = cv2.getTickFrequency() / (cv2.getTickCount() - t)
         bbox = [int(x) for x in bbox]
         with self.read_lock:
             self.bbox = bbox
+            self.fps = fps
     
     def get_bbox(self):
         with self.read_lock:
             bbox = self.bbox
-        return bbox
+            fps = self.fps
+        return bbox, fps
 
 def setTrackerType(tracker_type):
     if tracker_type == 'BOOSTING':
