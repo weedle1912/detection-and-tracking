@@ -24,14 +24,15 @@ def main():
 
         draw_bbox(frame, bbox)
         cv2.imshow('frame', frame)
-        if ( cv2.waitKey(1) & 0xFF == ord('q') ):
+        if ( cv2.waitKey(1) & 0xFF == 27 ):
             break
     
     cap.release()
     cv2.destroyAllWindows()
 
 def draw_bbox(frame, bbox):
-    cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),(0,255,0),2)
+    if bbox:
+        cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),(0,255,0),2)
 
 
 if __name__=="__main__":
