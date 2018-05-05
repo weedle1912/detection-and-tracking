@@ -41,7 +41,6 @@ def test():
     cap.start()
 
     t_start = False
-    lost_count = 0
 
     while True:
         # Read frame
@@ -72,6 +71,11 @@ def test():
         bbox_t = tracker.get_bbox()
         bbox_s = stabilize(bbox_t)
 
+        if not bbox_s:
+            no_track = True
+        else:
+            no_track = False
+
         # Get FPS
         FPS_d = detections['FPS']
         FPS_t = tracker.get_fps()
@@ -81,7 +85,7 @@ def test():
         draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
         draw_bbox(frame, bbox_s, BGR['red']) # Stabilized - red
         draw_header(frame, detections['detection_classes'], detections['num_detections'])
-        draw_footer(frame, FPS_d, FPS_t)
+        draw_footer(frame, FPS_d, FPS_t, no_track)
 
         # Display frame
         cv2.imshow('Frame', frame)
@@ -129,10 +133,12 @@ def draw_header(img, classes, n):
     for i in range(n):
         cv2.putText(img,str(classes[i]),(10,(20+i*l_space)), cv2.FONT_HERSHEY_PLAIN, 1,BGR['white'],1,cv2.LINE_AA)
 
-def draw_footer(img, fps_d, fps_t): 
+def draw_footer(img, fps_d, fps_t, no_track): 
     cv2.putText(img,( 'FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['green'],1,cv2.LINE_AA)
-    cv2.putText(img,( 'FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['orange'],1,cv2.LINE_AA)
-    cv2.putText(img,( 'Lost track:   0' ),(FRAME_WIDTH-135,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['white'],1,cv2.LINE_AA)
+    if no_track:
+        cv2.putText(img,( 'No track.' ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['red'],1,cv2.LINE_AA)
+    else:
+        cv2.putText(img,( 'FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['orange'],1,cv2.LINE_AA)
 
 def format_bbox(det_dict):
     ymin, xmin, ymax, xmax = det_dict['detection_boxes'][0]
