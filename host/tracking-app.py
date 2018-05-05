@@ -58,20 +58,23 @@ def test():
 
         if not tracker.isInit():
             tracker = Tracker()
-            tracker.init(frame, bbox_d)
+            tracker.init(frame, (0,0,0,0))
 
         # Tracker update
         if new_detection:
-            if (detections['num_detections'] == 0) or (detections['detection_classes'][0] != 5):
-                cap.clear_frame_buffer()
-            else:
+            if bbox_d:
                 buffer = cap.read_frame_buffer()
                 if buffer:
                     tracker = Tracker()
                     tracker.init(buffer.pop(0), bbox_d)
                     for f in buffer:
                         tracker.update(f)
-        tracker.update(frame)
+                    tracker.update(frame)
+            else:
+                cap.clear_frame_buffer()
+        else:
+            tracker.update(frame)
+        
         bbox_t = tracker.get_bbox()
         bbox_s = stabilize(bbox_t)
 
@@ -148,21 +151,9 @@ def get_single_bbox(det_dict, class_index):
     bboxes, scores = [], []
     for i in range(det_dict['num_detections']):
         if det_dict['detection_classes'][i] == class_index:
-            bboxes.append(det_dict['detection_boxes'][i])
+            return format_bbox_2(det_dict['detection_boxes'][i])
             scores.append(det_dict['detection_scores'][i])
-    if not bboxes:
-        return (0,0,0,0)
-    # Create bbox from weighted average on score
-    #n = len(bboxes)
-    bbox = [0,0,0,0]
-    for i in range(len(bboxes)):
-        bbox[0] += bboxes[i][0]*scores[i]
-        bbox[1] += bboxes[i][1]*scores[i]
-        bbox[2] += bboxes[i][2]*scores[i]
-        bbox[3] += bboxes[i][3]*scores[i]
-    bbox = [f/sum(scores) for f in bbox]
-    
-    return format_bbox_2(bbox)
+    return ()
 
 def format_bbox_2(bbox_norm):
     ymin, xmin, ymax, xmax = bbox_norm
