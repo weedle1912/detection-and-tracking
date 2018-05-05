@@ -44,8 +44,10 @@ def test():
     t_start = False
 
     while True:
+        # Wait for new frame
+        cap.wait()
         # Read frame
-        ok, frame = cap.read()
+        ok, frame = cap.read(True)
         if not ok:
             break
 

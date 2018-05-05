@@ -21,7 +21,7 @@ class VideoCaptureAsync:
         self.frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.frame_buffer = []
         self.started = False
-        self.new_frame = True
+        self.new_frame = threading.Event()
         self.buffer_lock = threading.Lock()
         self.read_lock = threading.Lock()
 
@@ -49,16 +49,16 @@ class VideoCaptureAsync:
             with self.read_lock:
                 self.grabbed = grabbed
                 self.frame = frame
-                self.new_frame = True
             with self.buffer_lock:
                 self.frame_buffer.append(frame)
+            self.new_frame.set()
             # Sleep depend on FPS
             time.sleep(1.0/self.fps)
     
-    def isNewframe(self):
-        return self.new_frame
+    def wait(self):
+        self.new_frame.wait()
 
-    def read(self):
+    def read(self, clear_event=False):
         with self.read_lock:
             if self.grabbed:
                 frame = self.frame.copy()
@@ -66,7 +66,8 @@ class VideoCaptureAsync:
             else:
                 frame = None
                 grabbed = False
-            self.new_frame = False
+        if clear_event:
+            self.new_frame.clear()
         return grabbed, frame
 
     def read_frame_buffer(self):
