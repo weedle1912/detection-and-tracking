@@ -88,19 +88,19 @@ def test():
     cap.stop()
     cv2.destroyAllWindows()
 
-def draw_detections(img, det_dict, n):
-    for i in range(n):
-        #[ymin, xmin, ymax, xmax]
-        ymin, xmin, ymax, xmax = det_dict['detection_boxes'][i]
-        bbox = [(int(xmin*FRAME_WIDTH), int(ymin*FRAME_HEIGHT)), (int(xmax*FRAME_WIDTH), int(ymax*FRAME_HEIGHT))]
-        cv2.rectangle(img,bbox[0],bbox[1],(255,0,0),2)
 
 def draw_bbox(frame, bbox, color):
     cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
 
+def draw_header(img, classes, n):
+    l_space = 15
+    for i in range(n):
+        cv2.putText(img,str(classes[i]),(10,(20+i*l_space)), cv2.FONT_HERSHEY_PLAIN, 1,BGR['white'],1,cv2.LINE_AA)
+
 def draw_footer(img, fps_d, fps_t): 
     cv2.putText(img,( 'FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['green'],1,cv2.LINE_AA)
     cv2.putText(img,( 'FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['orange'],1,cv2.LINE_AA)
+    cv2.putText(img,( 'Lost track:   0' ),(FRAME_WIDTH-135,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['white'],1,cv2.LINE_AA)
 
 def format_bbox(det_dict):
     ymin, xmin, ymax, xmax = det_dict['detection_boxes'][0]
