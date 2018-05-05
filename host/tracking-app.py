@@ -81,8 +81,8 @@ def test():
         FPS_t = tracker.get_fps()
 
         # Frame overlay
-        draw_bbox(frame, bbox_d, BGR['green']) # Detection - green
-        draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
+        #draw_bbox(frame, bbox_d, BGR['green']) # Detection - green
+        #draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
         draw_bbox(frame, bbox_s, BGR['red']) # Stabilized - red
         draw_header(frame, detections['detection_classes'], detections['num_detections'])
         draw_footer(frame, FPS_d, FPS_t, no_track)
