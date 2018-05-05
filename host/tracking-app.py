@@ -22,6 +22,8 @@ FPS = 30
 
 BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255)}
 
+bbox_buffer = [()]*10
+
 def test():
     cwd = os.getcwd()
     # Path to checkpoint (ckpt)
@@ -68,6 +70,7 @@ def test():
                         tracker.update(f)
         tracker.update(frame)
         bbox_t = tracker.get_bbox()
+        bbox_s = stabilize(bbox_t)
 
         # Get FPS
         FPS_d = detections['FPS']
@@ -76,6 +79,7 @@ def test():
         # Frame overlay
         draw_bbox(frame, bbox_d, BGR['green']) # Detection - green
         draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
+        draw_bbox(frame, bbox_s, BGR['red']) # Stabilized - red
         draw_header(frame, detections['detection_classes'], detections['num_detections'])
         draw_footer(frame, FPS_d, FPS_t)
 
@@ -87,6 +91,33 @@ def test():
     detector.stop()
     cap.stop()
     cv2.destroyAllWindows()
+
+def stabilize(bbox):
+    # Update buffer (FILO)
+    if bbox not in bbox_buffer:
+        bbox_buffer.pop(0)
+        bbox_buffer.append(bbox)
+    if not bbox:
+        return ()
+    
+    # Save box center
+    cx, cy = bbox[0]+(bbox[2]//2), bbox[1]+(bbox[3]//2)
+    ws,hs = [],[]
+    for b in bbox_buffer:
+        if b:
+            ws.append(b[2])
+            hs.append(b[3])
+    if not ws or not hs:
+        return ()
+    
+    # Calc median size
+    ws.sort()
+    hs.sort()
+    w = ws[len(ws)//2]
+    h = hs[len(ws)//2]
+    x = cx - (w//2)
+    y = cy - (h//2)
+    return (x,y,w,h)
 
 
 def draw_bbox(frame, bbox, color):
