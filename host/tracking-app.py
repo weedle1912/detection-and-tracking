@@ -14,6 +14,7 @@ MODEL_NAMES = [
     'faster_rcnn_inception_v2_coco_2018_01_28'
 ]
 LABEL_NAME = 'mscoco_label_map'
+CLS_NAMES = {'airplane':5}
 NUM_CLASSES = 90
 VIDEO_FILE = '../videos/HobbyKing.mp4'
 FRAME_WIDTH = 640
@@ -50,7 +51,8 @@ def test():
 
         # Get detection
         new_detection, detections = detector.get_detections()
-        bbox_d = format_bbox(detections)
+        #bbox_d = format_bbox(detections)
+        bbox_d = get_single_bbox(detections, CLS_NAMES['airplane'])
 
         if not tracker.isInit():
             tracker = Tracker()
@@ -139,6 +141,34 @@ def draw_footer(img, fps_d, fps_t, no_track):
         cv2.putText(img,( 'No track.' ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['red'],1,cv2.LINE_AA)
     else:
         cv2.putText(img,( 'FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['orange'],1,cv2.LINE_AA)
+
+def get_single_bbox(det_dict, class_index):
+    bboxes, scores = [], []
+    for i in range(det_dict['num_detections']):
+        if det_dict['detection_classes'][i] == class_index:
+            bboxes.append(det_dict['detection_boxes'][i])
+            scores.append(det_dict['detection_scores'][i])
+    if not bboxes:
+        return (0,0,0,0)
+    # Create bbox from weighted average on score
+    #n = len(bboxes)
+    bbox = [0,0,0,0]
+    for i in range(len(bboxes)):
+        bbox[0] += bboxes[i][0]*scores[i]
+        bbox[1] += bboxes[i][1]*scores[i]
+        bbox[2] += bboxes[i][2]*scores[i]
+        bbox[3] += bboxes[i][3]*scores[i]
+    bbox = [f/sum(scores) for f in bbox]
+    
+    return format_bbox_2(bbox)
+
+def format_bbox_2(bbox_norm):
+    ymin, xmin, ymax, xmax = bbox_norm
+    x = int(xmin*FRAME_WIDTH)
+    y = int(ymin*FRAME_HEIGHT)
+    w = int(xmax*FRAME_WIDTH) - int(xmin*FRAME_WIDTH)
+    h = int(ymax*FRAME_HEIGHT) - int(ymin*FRAME_HEIGHT)
+    return (x,y,w,h)    
 
 def format_bbox(det_dict):
     ymin, xmin, ymax, xmax = det_dict['detection_boxes'][0]
