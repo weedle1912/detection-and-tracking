@@ -110,6 +110,41 @@ def format_bbox(det_dict):
     h = int(ymax*FRAME_HEIGHT) - int(ymin*FRAME_HEIGHT)
     return (x,y,w,h)
 
+def iou(box1, box2):
+    # Box 1
+    xmin1, ymin1, xmax1, ymax1 = box1[0], box1[1], (box1[0]+box1[2]), (box1[1]+box1[3])
+    area_1 = box1[2]*box1[3]
+    # Box 2
+    xmin2, ymin2, xmax2, ymax2 = box2[0], box2[1], (box2[0]+box2[2]), (box2[1]+box2[3])
+    area_2 = box2[2]*box2[3]
+    # Check zero-division
+    if ( (area_1 + area_2) == 0):
+        return 0.00
+    # Intersection
+    xmin_i, ymin_i = max(xmin1, xmin2), max(ymin1, ymin2)
+    xmax_i, ymax_i = min(xmax1, xmax2), min(ymax1, ymax2)
+    area_i = (xmax_i-xmin_i)*(ymax_i-ymin_i)
+    # IoU
+    iou = (area_i / float(area_1+area_2-area_i))
+    if iou < 0:
+        return 0.00
+    return iou
+
+def bbox_scale(box1, box2, factor):
+    box_s = box2
+    a1 = box1[2]*box1[3]
+    a2 = box2[2]*box2[3]
+    if a2 == 0:
+        return box_s
+    scale_diff = a1/float(a2)
+    # Remove jitter:
+    if 0.9 < scale_diff < 1.1:
+        cx, cy = (box2[0]+(box2[2]/2), box2[1]+(box2[3]/2))
+        box_s[0] = int(cx-(box1[2]/2))
+        box_s[1] = int(cy-(box1[3]/2))
+        box_s[2], box_s[3] = box1[2], box1[3]
+    return box_s
+
 if __name__ == '__main__':
     os.system('clear')
     art.printAsciiArt('Tracking')
