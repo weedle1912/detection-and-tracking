@@ -9,7 +9,7 @@ if cv2.__version__ < '3.4.0':
 class Tracker:
     def __init__(self, tracker_type='MEDIANFLOW'):
         self.tracker_type = tracker_type
-        self.bbox = (0,0,0,0) # (x,y,w,h)
+        self.bbox = () # (x,y,w,h)
         self.is_init = False
         self.fps = 0
         self.read_lock = threading.Lock()
@@ -32,7 +32,9 @@ class Tracker:
         t = cv2.getTickCount()
         ok, bbox = self.tracker.update(frame)
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - t)
-        bbox = [int(x) for x in bbox]
+        bbox = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
+        if bbox[2] == bbox[3] == 0:
+            bbox = ()
         with self.read_lock:
             self.bbox = bbox
             self.fps = fps

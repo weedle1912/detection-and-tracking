@@ -90,7 +90,8 @@ def test():
 
 
 def draw_bbox(frame, bbox, color):
-    cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
+    if bbox:
+        cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
 
 def draw_header(img, classes, n):
     l_space = 15
