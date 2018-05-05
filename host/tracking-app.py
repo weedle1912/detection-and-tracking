@@ -37,6 +37,10 @@ def test():
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
 
+    # Create out file
+    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+    out = cv2.VideoWriter('out.mp4', fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
+
     detector.start()
     detector.wait() # First detection is slow
     cap.start()
@@ -95,12 +99,14 @@ def test():
         draw_footer(frame, FPS_d, FPS_t, no_track)
 
         # Display frame
+        out.write(frame)
         cv2.imshow('Frame', frame)
         if cv2.waitKey(1) == 27:
             break
     
     detector.stop()
     cap.stop()
+    out.release()
     cv2.destroyAllWindows()
 
 def stabilize(bbox):
