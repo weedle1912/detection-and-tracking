@@ -23,9 +23,11 @@ class VideoCaptureAsync:
         self.new_frame = threading.Event()
         self.buffer_lock = threading.Lock()
         self.read_lock = threading.Lock()
+        self.thread_capture = threading.Thread(name='Video Capture', target=self.update, args=())
         # For timing
         self.fps = fps
         self.timer = threading.Event()
+        self.thread_timer = threading.Thread(name='Capture Timer', target=self.time_loop, args=())
 
     def set(self, var1, var2):
         self.cap.set(var1, var2)
@@ -39,12 +41,10 @@ class VideoCaptureAsync:
             return None
         print('[c] Starting.')
         self.started = True
-        self.thread_capture = threading.Thread(name='Video Capture', target=self.update, args=())
         self.thread_capture.start()
         return self
 
     def update(self):
-        self.thread_timer = threading.Thread(name='Capture Timer', target=self.time_loop, args=())
         self.thread_timer.start()
         while self.started:
             self.timer.clear()
