@@ -21,7 +21,13 @@ FRAME_HEIGHT = 480
 def app():
     print('[i] Init.')
     cap = VideoCaptureAsync(VIDEO_FILE, FRAME_WIDTH, FRAME_HEIGHT, 30)
-    detector = Detector(cap, MODEL_NAMES[1], LABEL_NAME, NUM_CLASSES)
+    
+    cwd = os.getcwd()
+    # Path to checkpoint (ckpt)
+    model_path = os.path.join(cwd, 'models', MODEL_NAMES[1], 'frozen_inference_graph.pb')
+    # Path to label names
+    labels_path = os.path.join(cwd, 'object_detection', 'data', LABEL_NAME + '.pbtxt')
+    detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
 
     detector.start()
     detector.wait() # First detection is slow
