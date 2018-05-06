@@ -16,7 +16,6 @@ class VideoCaptureAsync:
         self.cap = cv2.VideoCapture(self.src)
         self.width = width
         self.height = height
-        self.fps = fps
         self.grabbed = True
         self.frame = np.zeros((self.height, self.width, 3), np.uint8)
         self.frame_buffer = []
@@ -24,6 +23,9 @@ class VideoCaptureAsync:
         self.new_frame = threading.Event()
         self.buffer_lock = threading.Lock()
         self.read_lock = threading.Lock()
+        # For timing
+        self.fps = fps
+        self.timer = threading.Event()
 
     def set(self, var1, var2):
         self.cap.set(var1, var2)
@@ -37,12 +39,15 @@ class VideoCaptureAsync:
             return None
         print('[c] Starting.')
         self.started = True
-        self.thread = threading.Thread(name='Video Capture', target=self.update, args=())
-        self.thread.start()
+        self.thread_capture = threading.Thread(name='Video Capture', target=self.update, args=())
+        self.thread_capture.start()
         return self
 
     def update(self):
+        self.thread_timer = threading.Thread(name='Capture Timer', target=self.time_loop, args=())
+        self.thread_timer.start()
         while self.started:
+            self.timer.clear()
             grabbed, frame = self.cap.read()
             if grabbed:
                 frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
@@ -52,9 +57,16 @@ class VideoCaptureAsync:
             with self.buffer_lock:
                 self.frame_buffer.append(frame)
             self.new_frame.set()
-            # Sleep depend on FPS
-            time.sleep(1.0/self.fps)
+            # Wait for next time tick
+            self.timer.wait(1)
+        
+        self.thread_timer.join()
     
+    def time_loop(self):
+        while self.started:
+            time.sleep(1.0/self.fps)
+            self.timer.set()
+
     def wait(self):
         self.new_frame.wait()
 
@@ -83,7 +95,7 @@ class VideoCaptureAsync:
     def stop(self):
         print('[c] Stopping.')
         self.started = False
-        self.thread.join()
+        self.thread_capture.join()
 
     def __exit__(self, exec_type, exc_value, traceback):
         self.cap.release()
