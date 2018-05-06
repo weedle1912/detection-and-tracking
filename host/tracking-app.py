@@ -21,7 +21,7 @@ FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
 
-BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255)}
+BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255), 'black':(0,0,0)}
 
 bbox_buffer = [()]*10
 
@@ -98,7 +98,7 @@ def test(args):
         #draw_bbox(frame, bbox_d, BGR['green']) # Detection - green
         #draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
         draw_bbox(frame, bbox_s, BGR['red']) # Stabilized - red
-        draw_header(frame, detections['detection_classes'], detections['num_detections'])
+        draw_header(frame)
         draw_footer(frame, FPS_d, FPS_t, no_track)
 
         # Display frame
@@ -149,17 +149,15 @@ def draw_bbox(frame, bbox, color):
     if bbox:
         cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
 
-def draw_header(img, classes, n):
-    l_space = 15
-    for i in range(n):
-        cv2.putText(img,str(classes[i]),(10,(20+i*l_space)), cv2.FONT_HERSHEY_PLAIN, 1,BGR['white'],1,cv2.LINE_AA)
+def draw_header(img):
+    cv2.putText(img,'Class: Airplane',(10,20), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
 
 def draw_footer(img, fps_d, fps_t, no_track): 
-    cv2.putText(img,( 'FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['green'],1,cv2.LINE_AA)
+    cv2.putText(img,( 'Det. FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
     if no_track:
         cv2.putText(img,( 'No track.' ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['red'],1,cv2.LINE_AA)
     else:
-        cv2.putText(img,( 'FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['orange'],1,cv2.LINE_AA)
+        cv2.putText(img,( 'Trc. FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
 
 def get_single_bbox(det_dict, class_index):
     bboxes, scores = [], []
