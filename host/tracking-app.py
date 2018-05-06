@@ -1,6 +1,7 @@
 import os
 import cv2
 import time
+import argparse
 
 import detector.ascii_art as art 
 
@@ -16,7 +17,6 @@ MODEL_NAMES = [
 LABEL_NAME = 'mscoco_label_map'
 CLS_NAMES = {'airplane':5}
 NUM_CLASSES = 90
-VIDEO_FILE = '../videos/HobbyKing.mp4'
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
@@ -25,21 +25,25 @@ BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,
 
 bbox_buffer = [()]*10
 
-def test():
+def test(args):
     cwd = os.getcwd()
     # Path to checkpoint (ckpt)
-    model_path = os.path.join(cwd, 'detector', 'models', MODEL_NAMES[1], 'frozen_inference_graph.pb')
+    model_path = os.path.join(cwd, 'detector', 'models', args['model'], 'frozen_inference_graph.pb')
     # Path to label names
-    labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', LABEL_NAME + '.pbtxt')
+    labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
 
     print('[i] Init.')
-    cap = VideoCaptureAsync(VIDEO_FILE, FRAME_WIDTH, FRAME_HEIGHT, FPS)
+    print('[i] Source: %s'%args['input'])
+    cap = VideoCaptureAsync(args['input'], FRAME_WIDTH, FRAME_HEIGHT, FPS)
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
 
     # Create out file
-    fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-    out = cv2.VideoWriter('out.mp4', fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
+    if args['write']:
+        fourcc = cv2.VideoWriter_fourcc(*args['codec'])
+        file_name = '%s%s'%(args['output'], args['ext'])
+        print('[i] Output: %s (c: %s)'%(file_name, args['codec']))
+        out = cv2.VideoWriter(file_name, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
 
     detector.start()
     detector.wait() # First detection is slow
@@ -98,14 +102,16 @@ def test():
         draw_footer(frame, FPS_d, FPS_t, no_track)
 
         # Display frame
-        out.write(frame)
+        if args['write']:
+            out.write(frame)
         cv2.imshow('Frame', frame)
         if cv2.waitKey(1) == 27:
             break
     
     detector.stop()
     cap.stop()
-    out.release()
+    if args['write']:
+        out.release()
     cv2.destroyAllWindows()
 
 def stabilize(bbox):
@@ -169,7 +175,27 @@ def format_bbox(bbox_norm):
     return (x,y,w,h)    
 
 if __name__ == '__main__':
+    # Parse arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument('-i', '--input', default='../videos/HobbyKing.mp4',
+        help='path to video source')
+    ap.add_argument('-m', '--model', default='ssd_mobilenet_v2_coco_2018_03_29',
+        help='name of inference model')
+    ap.add_argument('-l', '--label', default='mscoco_label_map',
+        help='name of label file')
+    ap.add_argument('-w', '--write', action='store_true',
+        help='wether or not to write result to file')
+    ap.add_argument('-o', '--output', default='out',
+        help='name of output file (w/o ext)')
+    ap.add_argument('-c', '--codec', default='mp4v',
+        help='fourcc coded for output file')
+    ap.add_argument('-e', '--ext', default='.mp4',
+        help='ext (container) for output file')
+    args = vars(ap.parse_args())
+    # Run
     os.system('clear')
     art.printAsciiArt('Tracking')
+    print('\n*****************************')
     print('Tracker v0.0.1 (c) weedle1912')
-    test()
+    print('*****************************\n')
+    test(args)
