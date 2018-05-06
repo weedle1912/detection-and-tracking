@@ -137,6 +137,9 @@ def stabilize(bbox):
     hs.sort()
     w = ws[len(ws)//2]
     h = hs[len(ws)//2]
+    # Increase size with 20%
+    w = int(w*1.2)
+    h = int(h*1.2)
     x = cx - (w//2)
     y = cy - (h//2)
     return (x,y,w,h)
