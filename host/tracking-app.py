@@ -15,7 +15,6 @@ MODEL_NAMES = [
     'faster_rcnn_inception_v2_coco_2018_01_28'
 ]
 LABEL_NAME = 'mscoco_label_map'
-CLS_NAMES = {'airplane':5}
 NUM_CLASSES = 90
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
@@ -37,6 +36,13 @@ def test(args):
     cap = VideoCaptureAsync(args['input'], FRAME_WIDTH, FRAME_HEIGHT, FPS)
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
+
+    # Target class of interest
+    target_class = args['target']
+    target_id = detector.get_class_id(target_class)
+    if not target_id:
+        print('[!] Error: target class "%s" is not part of "%s".'%(args['target'], args['label']))
+        exit()
 
     # Create out file
     if args['write']:
@@ -61,7 +67,7 @@ def test(args):
 
         # Get detection
         new_detection, detections = detector.get_detections()
-        bbox_d = get_single_bbox(detections, CLS_NAMES['airplane'])
+        bbox_d = get_single_bbox(detections, target_id)
 
         if not tracker.isInit():
             tracker = Tracker()
@@ -173,10 +179,10 @@ def draw_footer(img, fps_d, fps_t, no_track):
     else:
         cv2.putText(img,( 'Trc. FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
 
-def get_single_bbox(det_dict, class_index):
+def get_single_bbox(det_dict, class_id):
     bboxes, scores = [], []
     for i in range(det_dict['num_detections']):
-        if det_dict['detection_classes'][i] == class_index:
+        if det_dict['detection_classes'][i] == class_id:
             return format_bbox(det_dict['detection_boxes'][i])
             scores.append(det_dict['detection_scores'][i])
     return ()
@@ -198,6 +204,8 @@ if __name__ == '__main__':
         help='name of inference model')
     ap.add_argument('-l', '--label', default='mscoco_label_map',
         help='name of label file')
+    ap.add_argument('-t', '--target', default='airplane',
+        help='target class to track')
     ap.add_argument('-w', '--write', action='store_true',
         help='wether or not to write result to file')
     ap.add_argument('-o', '--output', default='out',
