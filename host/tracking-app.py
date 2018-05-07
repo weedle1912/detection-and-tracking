@@ -19,12 +19,13 @@ NUM_CLASSES = 90
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
+TRACKER_TIMEOUT_SEC = 1.5
 
 BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255), 'black':(0,0,0)}
 
 bbox_buffer = [()]*10
 
-def test(args):
+def run(args):
     cwd = os.getcwd()
     # Path to checkpoint (ckpt)
     model_path = os.path.join(cwd, 'detector', 'models', args['model'], 'frozen_inference_graph.pb')
@@ -57,6 +58,7 @@ def test(args):
     detector.start()
     detector.wait() # First detection is slow
     cap.start()
+    time_d = time.time()
 
     while True:
         # Wait for new frame
@@ -73,6 +75,7 @@ def test(args):
         # Tracker update
         if new_detection:
             if bbox_d:
+                time_d = time.time()
                 buffer = cap.read_frame_buffer()
                 if buffer:
                     tracker = Tracker()
@@ -86,6 +89,9 @@ def test(args):
             tracker.update(frame)
         
         bbox_t = tracker.get_bbox()
+        # Timeout tracker if detection lost
+        if (time.time()-time_d > TRACKER_TIMEOUT_SEC):
+            bbox_t = ()
         bbox_s = stabilize(bbox_t)
 
         if not bbox_s:
@@ -218,4 +224,4 @@ if __name__ == '__main__':
     print('\n*****************************')
     print('Tracker v0.0.1 (c) weedle1912')
     print('*****************************\n')
-    test(args)
+    run(args)
