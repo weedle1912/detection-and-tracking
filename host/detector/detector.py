@@ -98,6 +98,18 @@ class Detector:
             self.isNew = False
             self.new_detection.clear()
         return status, detections
+    
+    def get_class_id(self, name):
+        for k, v in self.category_index.items():
+            if v['name'] == name:
+                return v['id']
+        return None
+
+    def get_class_name(self, class_id):
+        for k, v in self.category_index.items():
+            if v['id'] == class_id:
+                return v['name']
+        return 'unknown'
 
 # * Load frozen TF model
 def load_tf_graph(model_path):
