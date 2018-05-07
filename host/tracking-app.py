@@ -101,10 +101,10 @@ def test(args):
         FPS_t = tracker.get_fps()
 
         # Frame overlay
-        #draw_bbox(frame, bbox_d, BGR['green']) # Detection - green
-        #draw_bbox(frame, bbox_t, BGR['orange']) # Tracking - orange
-        draw_bbox(frame, bbox_s, BGR['red']) # Stabilized - red
-        draw_header(frame)
+        #draw_bbox(frame, bbox_d, target_class, BGR['green']) # Detection - green
+        #draw_bbox(frame, bbox_t, target_class, BGR['orange']) # Tracking - orange
+        draw_bbox(frame, bbox_s, target_class, BGR['red']) # Stabilized - red
+        draw_header(frame, target_class)
         draw_footer(frame, FPS_d, FPS_t, no_track)
 
         # Display frame
@@ -151,10 +151,10 @@ def stabilize(bbox):
     return (x,y,w,h)
 
 
-def draw_bbox(frame, bbox, color):
+def draw_bbox(frame, bbox, label, color):
     if bbox:
         cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
-        draw_label(frame, bbox, 'airplane', color)
+        draw_label(frame, bbox, label, color)
 
 def draw_label(img, bbox, label, color):
     # Calc position
@@ -169,8 +169,8 @@ def draw_label(img, bbox, label, color):
     cv2.rectangle(img,(xb,yb),(xb+wb,yb+hb),color,-1) 
     cv2.putText(img,label,(xl,yl), cv2.FONT_HERSHEY_PLAIN, 1,(255,255,255),1,cv2.LINE_AA)
 
-def draw_header(img):
-    cv2.putText(img,'Class: Airplane',(10,20), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
+def draw_header(img, class_name):
+    cv2.putText(img,'Target: %s'%class_name.capitalize(),(10,20), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
 
 def draw_footer(img, fps_d, fps_t, no_track): 
     cv2.putText(img,( 'Det. FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
