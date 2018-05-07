@@ -36,6 +36,8 @@ def test(args):
     cap = VideoCaptureAsync(args['input'], FRAME_WIDTH, FRAME_HEIGHT, FPS)
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
+    ok, blank = cap.read()
+    tracker.init(blank, (0,0,0,0))
 
     # Target class of interest
     target_class = args['target']
@@ -56,8 +58,6 @@ def test(args):
     detector.wait() # First detection is slow
     cap.start()
 
-    t_start = False
-
     while True:
         # Wait for new frame
         cap.wait()
@@ -69,10 +69,6 @@ def test(args):
         # Get detection
         new_detection, detections = detector.get_detections()
         bbox_d, score = get_single_bbox(detections, target_id)
-
-        if not tracker.isInit():
-            tracker = Tracker()
-            tracker.init(frame, (0,0,0,0))
 
         # Tracker update
         if new_detection:

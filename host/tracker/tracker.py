@@ -1,3 +1,8 @@
+# *******************
+# * Module: Tracker *
+# *                 *
+# *******************
+
 import cv2 # opencv-contrib-python required!
 import threading
 import sys
@@ -10,20 +15,15 @@ class Tracker:
     def __init__(self, tracker_type='MEDIANFLOW'):
         self.tracker_type = tracker_type
         self.bbox = () # (x,y,w,h)
-        self.is_init = False
         self.fps = 0
         self.read_lock = threading.Lock()
 
     def init(self, frame, bbox):
         self.tracker = setTrackerType(self.tracker_type)
         ok = self.tracker.init(frame, bbox)
-        self.is_init = True
         with self.read_lock:
             self.bbox = bbox
         return ok
-
-    def isInit(self):
-        return self.is_init
 
     def clear(self):
         self.tracker = setTrackerType(self.tracker_type)
