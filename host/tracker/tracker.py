@@ -42,6 +42,8 @@ class Tracker:
     def get_bbox(self):
         with self.read_lock:
             bbox = self.bbox
+        if all(v == 0 for v in bbox):
+            return ()
         return bbox
     
     def get_fps(self):
