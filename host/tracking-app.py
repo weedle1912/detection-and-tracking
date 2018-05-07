@@ -148,6 +148,20 @@ def stabilize(bbox):
 def draw_bbox(frame, bbox, color):
     if bbox:
         cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
+        draw_label(frame, bbox, 'airplane', color)
+
+def draw_label(img, bbox, label, color):
+    # Calc position
+    s, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1) 
+    xb, yb, wb, hb = bbox[0]-1, bbox[1]-s[1]-6, s[0]+2, s[1]+6
+    xl, yl = bbox[0], bbox[1]-3
+    if yl < 13:
+        yb += (bbox[3]+hb)
+        yl += (bbox[3]+hb)
+
+    # Draw background and text
+    cv2.rectangle(img,(xb,yb),(xb+wb,yb+hb),color,-1) 
+    cv2.putText(img,label,(xl,yl), cv2.FONT_HERSHEY_PLAIN, 1,(255,255,255),1,cv2.LINE_AA)
 
 def draw_header(img):
     cv2.putText(img,'Class: Airplane',(10,20), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
