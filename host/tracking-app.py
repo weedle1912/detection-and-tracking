@@ -221,7 +221,5 @@ if __name__ == '__main__':
     # Run
     os.system('clear')
     art.printAsciiArt('Tracking')
-    print('\n*****************************')
-    print('Tracker v0.0.1 (c) weedle1912')
-    print('*****************************\n')
+    print('Tracker v1.0.0 (C) weedle1912\n')
     run(args)
