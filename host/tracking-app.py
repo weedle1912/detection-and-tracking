@@ -43,6 +43,7 @@ def test(args):
     if not target_id:
         print('[!] Error: target class "%s" is not part of "%s".'%(args['target'], args['label']))
         exit()
+    print('[i] Target: %s'%target_class)
 
     # Create out file
     if args['write']:
@@ -67,7 +68,7 @@ def test(args):
 
         # Get detection
         new_detection, detections = detector.get_detections()
-        bbox_d = get_single_bbox(detections, target_id)
+        bbox_d, score = get_single_bbox(detections, target_id)
 
         if not tracker.isInit():
             tracker = Tracker()
@@ -104,7 +105,7 @@ def test(args):
         #draw_bbox(frame, bbox_d, target_class, BGR['green']) # Detection - green
         #draw_bbox(frame, bbox_t, target_class, BGR['orange']) # Tracking - orange
         draw_bbox(frame, bbox_s, target_class, BGR['red']) # Stabilized - red
-        draw_header(frame, target_class)
+        draw_header(frame, target_class, score)
         draw_footer(frame, FPS_d, FPS_t, no_track)
 
         # Display frame
@@ -169,8 +170,9 @@ def draw_label(img, bbox, label, color):
     cv2.rectangle(img,(xb,yb),(xb+wb,yb+hb),color,-1) 
     cv2.putText(img,label,(xl,yl), cv2.FONT_HERSHEY_PLAIN, 1,(255,255,255),1,cv2.LINE_AA)
 
-def draw_header(img, class_name):
+def draw_header(img, class_name, score):
     cv2.putText(img,'Target: %s'%class_name.capitalize(),(10,20), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
+    cv2.putText(img,( 'Score: ' + ('%d%%'%score).rjust(4) ),(10,35), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
 
 def draw_footer(img, fps_d, fps_t, no_track): 
     cv2.putText(img,( 'Det. FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
@@ -180,12 +182,11 @@ def draw_footer(img, fps_d, fps_t, no_track):
         cv2.putText(img,( 'Trc. FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
 
 def get_single_bbox(det_dict, class_id):
-    bboxes, scores = [], []
     for i in range(det_dict['num_detections']):
         if det_dict['detection_classes'][i] == class_id:
-            return format_bbox(det_dict['detection_boxes'][i])
-            scores.append(det_dict['detection_scores'][i])
-    return ()
+            bbox = format_bbox(det_dict['detection_boxes'][i]) 
+            return bbox, int(det_dict['detection_scores'][i] * 100)
+    return (), 0
 
 def format_bbox(bbox_norm):
     ymin, xmin, ymax, xmax = bbox_norm
