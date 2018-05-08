@@ -19,6 +19,7 @@ NUM_CLASSES = 90
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
+SCORE_THRESHOLD = 50
 TRACKER_TIMEOUT_SEC = 1.5
 
 BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255), 'black':(0,0,0)}
@@ -71,6 +72,8 @@ def run(args):
         # Get detection
         new_detection, detections = detector.get_detections()
         bbox_d, score = get_single_bbox(detections, target_id)
+        if score < SCORE_THRESHOLD:
+            bbox_d = ()
 
         # Tracker update
         if new_detection:
