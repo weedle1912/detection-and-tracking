@@ -33,7 +33,6 @@ def run(args):
     labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
 
     print('[i] Init.')
-    print('[i] Source: %s'%args['input'])
     cap = VideoCaptureAsync(args['input'], FRAME_WIDTH, FRAME_HEIGHT, FPS)
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
@@ -46,7 +45,6 @@ def run(args):
     if not target_id:
         print('[!] Error: target class "%s" is not part of "%s".'%(args['target'], args['label']))
         exit()
-    print('[i] Target: %s'%target_class)
 
     # Create out file
     if args['write']:
@@ -201,6 +199,26 @@ def format_bbox(bbox_norm):
     h = int(ymax*FRAME_HEIGHT) - int(ymin*FRAME_HEIGHT)
     return (x,y,w,h)    
 
+def print_settings(args):
+    print('--- Settings:')
+    print('* Input:     ' + str(args['input']))
+    print('* Model:     ' + str(args['model']))
+    print('* Labels:    ' + str(args['label']))
+    print('--- Detection:')
+    print('* Target:    ' + str(args['target']))
+    print('* Threshold: ' + str(args['threshold'])+'%')
+    if args['write']:
+        print('--- Output:')
+        print('* File:      ' + str(args['output']) + str(args['ext']))
+        print('* Codec:     ' + str(args['codec']))
+    print('--- Notation:')
+    print('* [!]: warning')
+    print('* [c]: capture')
+    print('* [d]: detector')
+    print('* [i]: info')
+    print('* [t]: tracker')
+    print
+
 if __name__ == '__main__':
     # Parse arguments
     ap = argparse.ArgumentParser()
@@ -227,4 +245,6 @@ if __name__ == '__main__':
     os.system('clear')
     art.printAsciiArt('Tracking')
     print('Tracker v1.0.0 (C) weedle1912\n')
+    print_settings(args)
+    print('--- Running app:')
     run(args)
