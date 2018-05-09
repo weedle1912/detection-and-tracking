@@ -103,7 +103,7 @@ def run(args):
             no_track = False
 
         # Get FPS
-        FPS_d = detections['FPS']
+        FPS_d = detector.get_fps()
         FPS_t = tracker.get_fps()
 
         # Frame overlay

@@ -93,12 +93,16 @@ class Detector:
     def get_detections(self):
         with self.read_lock:
             detections = copy.deepcopy(self.detections)
-            detections['FPS'] = self.fps
             status = self.isNew
             self.isNew = False
             self.new_detection.clear()
         return status, detections
     
+    def get_fps(self):
+        with self.read_lock:
+            fps = self.fps
+        return fps
+
     def get_class_id(self, name):
         for k, v in self.category_index.items():
             if v['name'] == name:
