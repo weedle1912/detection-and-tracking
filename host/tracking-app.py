@@ -58,7 +58,7 @@ def run(args):
     detector.start()
     detector.wait() # First detection is slow
     cap.start()
-    time_d = time.time()
+    time_d = time.time() # Time since last detection
 
     while True:
         # Wait for new frame
@@ -117,7 +117,7 @@ def run(args):
         if args['write']:
             out.write(frame)
         cv2.imshow('Frame', frame)
-        if cv2.waitKey(1) == 27:
+        if cv2.waitKey(1) == 27: # Exit with 'esc' key
             break
     
     detector.stop()
