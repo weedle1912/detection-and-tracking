@@ -19,7 +19,6 @@ NUM_CLASSES = 90
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
-SCORE_THRESHOLD = 50
 TRACKER_TIMEOUT_SEC = 1.5
 
 BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255), 'black':(0,0,0)}
@@ -72,7 +71,8 @@ def run(args):
         # Get detection
         new_detection, detections = detector.get_detections()
         bbox_d, score = get_single_bbox(detections, target_id)
-        if score < SCORE_THRESHOLD:
+        # Filter detection on score
+        if score < args['threshold']:
             bbox_d = ()
 
         # Tracker update
@@ -212,6 +212,8 @@ if __name__ == '__main__':
         help='name of label file')
     ap.add_argument('-t', '--target', default='airplane',
         help='target class to track')
+    ap.add_argument('-th', '--threshold', type=int, default=50,
+        help='detection score threshold (0-100)')
     ap.add_argument('-w', '--write', action='store_true',
         help='wether or not to write result to file')
     ap.add_argument('-o', '--output', default='out',
