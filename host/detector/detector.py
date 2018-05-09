@@ -22,12 +22,10 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util 
 
 class Detector:
-    def __init__(self, cap='', model_path='', label_path='', num_classes=0):
+    def __init__(self, cap, model_path, label_path, num_classes=0):
         self.graph = load_tf_graph(model_path)
         self.category_index = get_label_index(label_path, num_classes)
         self.cap = cap
-        self.frame_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.frame_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.detections = {}
         self.fps = 0
         self.running = False
@@ -44,9 +42,6 @@ class Detector:
         self.thread = threading.Thread(name='Detection', target=self.run, args=())
         self.thread.start()
         return self
-    
-    def isRunning(self):
-        return self.running
     
     def wait(self):
         self.new_detection.wait()

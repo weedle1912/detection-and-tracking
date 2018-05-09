@@ -24,9 +24,6 @@ class Tracker:
         with self.read_lock:
             self.bbox = bbox
         return ok
-
-    def clear(self):
-        self.tracker = setTrackerType(self.tracker_type)
     
     def update(self, frame):
         t = cv2.getTickCount()
