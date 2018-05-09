@@ -3,8 +3,10 @@
 # *                  *
 # ********************
 
-import numpy as np 
 import os
+import sys
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+import numpy as np 
 import cv2
 import tensorflow as tf 
 import threading
@@ -20,15 +22,14 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util 
 
 class Detector:
-    def __init__(self, cap='', model_name='', label_name='', num_classes=0):
-        self.graph = load_tf_graph(model_name)
-        self.category_index = get_label_index(label_name, num_classes)
+    def __init__(self, cap, model_path, label_path, num_classes=0):
+        self.graph = load_tf_graph(model_path)
+        self.category_index = get_label_index(label_path, num_classes)
         self.cap = cap
-        self.frame_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.frame_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
         self.detections = {}
         self.fps = 0
         self.running = False
+        self.isNew = False
         self.new_detection = threading.Event()
         self.read_lock = threading.Lock()
     
@@ -41,9 +42,6 @@ class Detector:
         self.thread = threading.Thread(name='Detection', target=self.run, args=())
         self.thread.start()
         return self
-    
-    def isRunning(self):
-        return self.running
     
     def wait(self):
         self.new_detection.wait()
@@ -82,6 +80,7 @@ class Detector:
                     # Update detection
                     with self.read_lock:
                         self.detections = output_dict
+                        self.isNew = True
                         self.fps = fps
                     self.new_detection.set()
         self.running = False
@@ -89,30 +88,42 @@ class Detector:
     def get_detections(self):
         with self.read_lock:
             detections = copy.deepcopy(self.detections)
+            status = self.isNew
+            self.isNew = False
             self.new_detection.clear()
-        num = int(detections['num_detections'])
-        return num, detections
+        return status, detections
+    
+    def get_fps(self):
+        with self.read_lock:
+            fps = self.fps
+        return fps
+
+    def get_class_id(self, name):
+        for k, v in self.category_index.items():
+            if v['name'] == name:
+                return v['id']
+        return None
+
+    def get_class_name(self, class_id):
+        for k, v in self.category_index.items():
+            if v['id'] == class_id:
+                return v['name']
+        return 'unknown'
 
 # * Load frozen TF model
-def load_tf_graph(model_name):
-    cwd_path = os.getcwd()
-    path_to_ckpt = os.path.join(cwd_path, 'models', model_name, 'frozen_inference_graph.pb')
-    
+def load_tf_graph(model_path):
     detection_graph = tf.Graph()
     with detection_graph.as_default():
         od_graph_def = tf.GraphDef()
-        with tf.gfile.GFile(path_to_ckpt, 'rb') as fid:
+        with tf.gfile.GFile(model_path, 'rb') as fid:
             serialized_graph = fid.read()
             od_graph_def.ParseFromString(serialized_graph)
             tf.import_graph_def(od_graph_def, name='')
     return detection_graph
 
 # * Load label map
-def get_label_index(label_name, num_classes):
-    cwd_path = os.getcwd()
-    path_to_labels = os.path.join(cwd_path, 'object_detection', 'data', label_name + '.pbtxt')
-
-    label_map = label_map_util.load_labelmap(path_to_labels)
+def get_label_index(label_path, num_classes):
+    label_map = label_map_util.load_labelmap(label_path)
     categories = label_map_util.convert_label_map_to_categories(
         label_map, 
         max_num_classes=num_classes, 

@@ -1,3 +1,8 @@
+# *******************
+# * Module: Tracker *
+# *                 *
+# *******************
+
 import cv2 # opencv-contrib-python required!
 import threading
 import sys
@@ -9,7 +14,8 @@ if cv2.__version__ < '3.4.0':
 class Tracker:
     def __init__(self, tracker_type='MEDIANFLOW'):
         self.tracker_type = tracker_type
-        self.bbox = (0,0,0,0)
+        self.bbox = () # (x,y,w,h)
+        self.fps = 0
         self.read_lock = threading.Lock()
 
     def init(self, frame, bbox):
@@ -18,20 +24,29 @@ class Tracker:
         with self.read_lock:
             self.bbox = bbox
         return ok
-
-    def clear(self):
-        self.tracker = setTrackerType(self.tracker_type)
     
     def update(self, frame):
+        t = cv2.getTickCount()
         ok, bbox = self.tracker.update(frame)
-        bbox = [int(x) for x in bbox]
+        fps = cv2.getTickFrequency() / (cv2.getTickCount() - t)
+        bbox = (int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3]))
+        if bbox[2] == bbox[3] == 0:
+            bbox = ()
         with self.read_lock:
             self.bbox = bbox
+            self.fps = fps
     
     def get_bbox(self):
         with self.read_lock:
             bbox = self.bbox
+        if all(v == 0 for v in bbox):
+            return ()
         return bbox
+    
+    def get_fps(self):
+        with self.read_lock:
+            fps = self.fps
+        return fps
 
 def setTrackerType(tracker_type):
     if tracker_type == 'BOOSTING':
