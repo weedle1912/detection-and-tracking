@@ -3,11 +3,13 @@ import cv2
 import time
 import argparse
 
-import detector.ascii_art as art 
-
 from detector.detector import Detector
 from detector.videocapture import VideoCaptureAsync
 from tracker.tracker import Tracker
+
+import utils.draw as draw_utils
+import utils.bbox as bbox_utils
+import utils.ascii_art as art_utils
 
 MODEL_NAMES = [
     'ssd_inception_v2_coco_2017_11_17',
@@ -20,10 +22,6 @@ FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
 TRACKER_TIMEOUT_SEC = 1.5
-
-BGR = {'green':(0,255,0), 'orange':(0,153,255), 'white':(255,255,255), 'red':(0,0,255), 'black':(0,0,0)}
-
-bbox_buffer = [()]*10
 
 def run(args):
     cwd = os.getcwd()
@@ -56,7 +54,9 @@ def run(args):
     detector.start()
     detector.wait() # First detection is slow
     cap.start()
-    time_d = time.time() # Time since last detection
+    
+    time_d = time.time()  # Time since last detection
+    bbox_buffer = [()]*10 # For bbox stabilization
 
     while True:
         # Wait for new frame
@@ -68,7 +68,7 @@ def run(args):
 
         # Get detection
         new_detection, detections = detector.get_detections()
-        bbox_d, score = get_single_bbox(detections, target_id)
+        bbox_d, score = bbox_utils.get_single_bbox(detections, target_id, FRAME_WIDTH, FRAME_HEIGHT)
         # Filter detection on score
         if score < args['threshold']:
             bbox_d = ()
@@ -93,7 +93,7 @@ def run(args):
         # Timeout tracker if detection lost
         if (time.time()-time_d > TRACKER_TIMEOUT_SEC):
             bbox_t = ()
-        bbox_s = stabilize(bbox_t)
+        bbox_s, bbox_buffer = bbox_utils.stabilize_bbox(bbox_t, bbox_buffer)
 
         if not bbox_s:
             no_track = True
@@ -105,11 +105,11 @@ def run(args):
         FPS_t = tracker.get_fps()
 
         # Frame overlay
-        #draw_bbox(frame, bbox_d, target_class, BGR['green']) # Detection - green
-        #draw_bbox(frame, bbox_t, target_class, BGR['orange']) # Tracking - orange
-        draw_bbox(frame, bbox_s, target_class, BGR['red']) # Stabilized - red
-        draw_header(frame, target_class, score)
-        draw_footer(frame, FPS_d, FPS_t, no_track)
+        #draw_utils.draw_bbox(frame, bbox_d, target_class, 'green') # Detection - green
+        #draw_utils.draw_bbox(frame, bbox_t, target_class, 'orange') # Tracking - orange
+        draw_utils.draw_bbox(frame, bbox_s, target_class, 'red') # Stabilized - red
+        draw_utils.draw_header(frame, target_class, score)
+        draw_utils.draw_footer(frame, FPS_d, FPS_t, no_track, FRAME_HEIGHT)
 
         # Display frame
         if args['write']:
@@ -122,82 +122,7 @@ def run(args):
     cap.stop()
     if args['write']:
         out.release()
-    cv2.destroyAllWindows()
-
-def stabilize(bbox):
-    # Update buffer (FILO)
-    if bbox not in bbox_buffer:
-        bbox_buffer.pop(0)
-        bbox_buffer.append(bbox)
-    if not bbox:
-        return ()
-    
-    # Save box center
-    cx, cy = bbox[0]+(bbox[2]//2), bbox[1]+(bbox[3]//2)
-    ws,hs = [],[]
-    for b in bbox_buffer:
-        if b:
-            ws.append(b[2])
-            hs.append(b[3])
-    if not ws or not hs:
-        return ()
-    
-    # Calc median size
-    ws.sort()
-    hs.sort()
-    w = ws[len(ws)//2]
-    h = hs[len(ws)//2]
-    # Increase size with 20%
-    w = int(w*1.2)
-    h = int(h*1.2)
-    x = cx - (w//2)
-    y = cy - (h//2)
-    return (x,y,w,h)
-
-
-def draw_bbox(frame, bbox, label, color):
-    if bbox:
-        cv2.rectangle(frame,(bbox[0],bbox[1]),(bbox[0]+bbox[2],bbox[1]+bbox[3]),color,2)
-        draw_label(frame, bbox, label, color)
-
-def draw_label(img, bbox, label, color):
-    # Calc position
-    s, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_PLAIN, 1, 1) 
-    xb, yb, wb, hb = bbox[0]-1, bbox[1]-s[1]-6, s[0]+2, s[1]+6
-    xl, yl = bbox[0], bbox[1]-3
-    if yl < 13:
-        yb += (bbox[3]+hb)
-        yl += (bbox[3]+hb)
-
-    # Draw background and text
-    cv2.rectangle(img,(xb,yb),(xb+wb,yb+hb),color,-1) 
-    cv2.putText(img,label,(xl,yl), cv2.FONT_HERSHEY_PLAIN, 1,(255,255,255),1,cv2.LINE_AA)
-
-def draw_header(img, class_name, score):
-    cv2.putText(img,'Target: %s'%class_name.capitalize(),(10,20), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
-    cv2.putText(img,( 'Score: ' + ('%d%%'%score).rjust(4) ),(10,35), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
-
-def draw_footer(img, fps_d, fps_t, no_track): 
-    cv2.putText(img,( 'Det. FPS: ' + ('%d'%fps_d).rjust(3) ),(10,FRAME_HEIGHT-25), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
-    if no_track:
-        cv2.putText(img,( 'No track.' ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['red'],1,cv2.LINE_AA)
-    else:
-        cv2.putText(img,( 'Trc. FPS: ' + ('%d'%fps_t).rjust(3) ),(10,FRAME_HEIGHT-10), cv2.FONT_HERSHEY_PLAIN, 1,BGR['black'],1,cv2.LINE_AA)
-
-def get_single_bbox(det_dict, class_id):
-    for i in range(det_dict['num_detections']):
-        if det_dict['detection_classes'][i] == class_id:
-            bbox = format_bbox(det_dict['detection_boxes'][i]) 
-            return bbox, int(det_dict['detection_scores'][i] * 100)
-    return (), 0
-
-def format_bbox(bbox_norm):
-    ymin, xmin, ymax, xmax = bbox_norm
-    x = int(xmin*FRAME_WIDTH)
-    y = int(ymin*FRAME_HEIGHT)
-    w = int(xmax*FRAME_WIDTH) - int(xmin*FRAME_WIDTH)
-    h = int(ymax*FRAME_HEIGHT) - int(ymin*FRAME_HEIGHT)
-    return (x,y,w,h)    
+    cv2.destroyAllWindows()   
 
 def print_settings(args):
     print('--- Settings:')
@@ -243,7 +168,7 @@ if __name__ == '__main__':
     args = vars(ap.parse_args())
     # Run
     os.system('clear')
-    art.printAsciiArt('Tracking')
+    art_utils.printAsciiArt('Tracking')
     print('Tracker v1.0.0 (C) weedle1912\n')
     print_settings(args)
     print('--- Running app:')
