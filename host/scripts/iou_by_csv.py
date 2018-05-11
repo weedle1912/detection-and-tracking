@@ -69,8 +69,12 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-r', '--result', required=True,
         help='path to result file')
+    ap.add_argument('-rs', '--result-size', required=True,
+        help='frame size of video (w,h)')
     ap.add_argument('-t', '--truth', required=True,
         help='path to ground truth file')
+    ap.add_argument('-ts', '--truth-size', required=True,
+        help='frame size of annotations (w,h)')
     ap.add_argument('-o', '--output', default='out.csv',
         help='path to output file')
     
