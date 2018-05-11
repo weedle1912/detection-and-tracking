@@ -48,6 +48,7 @@ def run(args):
         file_name = '%s%s'%(args['output'], args['ext'])
         print('[i] Output: %s (c: %s)'%(file_name, args['codec']))
         out = cv2.VideoWriter(file_name, fourcc, FPS, (args['size'][0], args['size'][1]))
+    file_csv = open(args['output']+'.csv', 'w')
 
     detector.start()
     detector.wait() # First detection is slow
@@ -90,6 +91,12 @@ def run(args):
         if (time.time()-time_d > TRACKER_TIMEOUT_SEC):
             bbox_t = ()
         bbox_s, bbox_buffer = bbox_utils.bbox_stabilize(bbox_t, bbox_buffer)
+        # Write normalized bbox to file
+        bbox_n = bbox_utils.bbox_normalize(bbox_s, args['size'][0], args['size'][1], 4)
+        if bbox_n:
+            file_csv.write( str(bbox_n[0])+','+str(bbox_n[1])+','+str(bbox_n[2])+','+str(bbox_n[3])+'\n' )
+        else:
+            file_csv.write('()\n')
 
         if not bbox_s:
             no_track = True
@@ -118,6 +125,7 @@ def run(args):
     cap.stop()
     if args['write']:
         out.release()
+    file_csv.close()
     cv2.destroyAllWindows()   
 
 def print_settings(args):
