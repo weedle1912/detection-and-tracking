@@ -32,17 +32,10 @@ def main(args):
 
 def line_to_bbox(line, vid_size=FRAME_SIZE, frame_size=FRAME_SIZE):
     line = line.strip()
-    if line == 'nan,nan,nan,nan':
+    if line == '()':
         return ()
     x, y, w, h = line.split(',')
-    if not vid_size == frame_size:
-        x, y, w, h = resize((x, y, w, h), vid_size, frame_size)
-    return (int(x), int(y), int(w), int(h))
-
-def resize(bbox, v_size, f_size):
-    f_width, f_height = f_size
-    x, y, w, h = float(bbox[0]),float(bbox[1]),float(bbox[2]),float(bbox[3]) 
-    return (x/v_size[0]*f_size[0], y/v_size[1]*f_size[1], w/v_size[0]*f_size[0], h/v_size[1]*f_size[1])
+    return (float(x), float(y), float(w), float(h))
 
 def iou(b1, b2):
     if not b1 and not b2:
@@ -69,13 +62,9 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('-r', '--result', required=True,
         help='path to result file')
-    ap.add_argument('-rs', '--result-size', required=True,
-        help='frame size of video (w,h)')
     ap.add_argument('-t', '--truth', required=True,
         help='path to ground truth file')
-    ap.add_argument('-ts', '--truth-size', required=True,
-        help='frame size of annotations (w,h)')
-    ap.add_argument('-o', '--output', default='out.csv',
+    ap.add_argument('-o', '--output', default='iou_out.csv',
         help='path to output file')
     
     args = vars(ap.parse_args())
