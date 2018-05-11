@@ -2,3 +2,5 @@
 *~
 *.pyc
 host/res
+host/val/*
+!host/val/*.sh
