@@ -89,7 +89,7 @@ def run(args):
         # Timeout tracker if detection lost
         if (time.time()-time_d > TRACKER_TIMEOUT_SEC):
             bbox_t = ()
-        bbox_s, bbox_buffer = bbox_utils.stabilize_bbox(bbox_t, bbox_buffer)
+        bbox_s, bbox_buffer = bbox_utils.bbox_stabilize(bbox_t, bbox_buffer)
 
         if not bbox_s:
             no_track = True
