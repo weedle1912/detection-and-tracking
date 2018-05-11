@@ -83,11 +83,9 @@ def run(args):
                     tracker.init(buffer.pop(0), bbox_d)
                     for f in buffer:
                         tracker.update(f)
-                    tracker.update(frame)
             else:
                 cap.clear_frame_buffer()
-        else:
-            tracker.update(frame)
+        tracker.update(frame)
         
         bbox_t = tracker.get_bbox()
         # Timeout tracker if detection lost
