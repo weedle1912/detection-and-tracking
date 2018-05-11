@@ -18,8 +18,6 @@ MODEL_NAMES = [
 ]
 LABEL_NAME = 'mscoco_label_map'
 NUM_CLASSES = 90
-FRAME_WIDTH = 640
-FRAME_HEIGHT = 480
 FPS = 30
 TRACKER_TIMEOUT_SEC = 1.5
 
@@ -31,7 +29,7 @@ def run(args):
     labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
 
     print('[i] Init.')
-    cap = VideoCaptureAsync(args['input'], FRAME_WIDTH, FRAME_HEIGHT, FPS)
+    cap = VideoCaptureAsync(args['input'], args['size'][0], args['size'][1], FPS)
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
     ok, blank = cap.read()
@@ -49,7 +47,7 @@ def run(args):
         fourcc = cv2.VideoWriter_fourcc(*args['codec'])
         file_name = '%s%s'%(args['output'], args['ext'])
         print('[i] Output: %s (c: %s)'%(file_name, args['codec']))
-        out = cv2.VideoWriter(file_name, fourcc, FPS, (FRAME_WIDTH, FRAME_HEIGHT))
+        out = cv2.VideoWriter(file_name, fourcc, FPS, (args['size'][0], args['size'][1]))
 
     detector.start()
     detector.wait() # First detection is slow
@@ -68,7 +66,7 @@ def run(args):
 
         # Get detection
         new_detection, detections = detector.get_detections()
-        bbox_d, score = bbox_utils.get_single_bbox(detections, target_id, FRAME_WIDTH, FRAME_HEIGHT)
+        bbox_d, score = bbox_utils.get_single_bbox(detections, target_id, args['size'][0], args['size'][1])
         # Filter detection on score
         if score < args['threshold']:
             bbox_d = ()
@@ -107,12 +105,12 @@ def run(args):
         #draw_utils.draw_bbox(frame, bbox_t, target_class, 'orange') # Tracking - orange
         draw_utils.draw_bbox(frame, bbox_s, target_class, 'red') # Stabilized - red
         draw_utils.draw_header(frame, target_class, score)
-        draw_utils.draw_footer(frame, FPS_d, FPS_t, no_track, FRAME_HEIGHT)
+        draw_utils.draw_footer(frame, FPS_d, FPS_t, no_track, args['size'][1])
 
         # Display frame
         if args['write']:
             out.write(frame)
-        cv2.imshow('Frame', frame)
+        cv2.imshow('Frame: %dx%d'%(args['size'][0],args['size'][1]), frame)
         if cv2.waitKey(1) == 27: # Exit with 'esc' key
             break
     
@@ -123,43 +121,49 @@ def run(args):
     cv2.destroyAllWindows()   
 
 def print_settings(args):
-    print('--- Settings:')
+    print('--- Source ---')
     print('* Input:     ' + str(args['input']))
+    print('* Size:      %dx%d'%(args['size'][0], args['size'][1]))
+    print('--- Detector ---')
     print('* Model:     ' + str(args['model']))
     print('* Labels:    ' + str(args['label']))
-    print('--- Detection:')
+    print('--- Object ---')
     print('* Target:    ' + str(args['target']))
     print('* Threshold: ' + str(args['threshold'])+'%')
     if args['write']:
-        print('--- Output:')
+        print('--- Output ---')
         print('* File:      ' + str(args['output']) + str(args['ext']))
         print('* Codec:     ' + str(args['codec']))
-    print('--- Notation:')
-    print('* [!]: warning')
-    print('* [c]: capture')
-    print('* [d]: detector')
-    print('* [i]: info')
-    print('* [t]: tracker')
     print
 
 if __name__ == '__main__':
     # Parse arguments
     ap = argparse.ArgumentParser()
     ap.add_argument('-i', '--input', default='../videos/HobbyKing.mp4',
+        metavar='SRC',
         help='path to video source')
+    ap.add_argument('-s', '--size', nargs=2, type=int, default=[640,480], 
+        metavar=('WIDTH', 'HEIGHT'),
+        help='video frame size')
     ap.add_argument('-m', '--model', default='ssd_mobilenet_v2_coco_2018_03_29',
+        metavar='MODEL_NAME',
         help='name of inference model')
     ap.add_argument('-l', '--label', default='mscoco_label_map',
+        metavar='LABEL_NAME',
         help='name of label file')
     ap.add_argument('-t', '--target', default='airplane',
+        metavar='TARGET_NAME',
         help='target class to track')
     ap.add_argument('-th', '--threshold', type=int, default=50,
+        metavar='PERCENT',
         help='detection score threshold (0-100)')
     ap.add_argument('-w', '--write', action='store_true',
         help='wether or not to write result to file')
     ap.add_argument('-o', '--output', default='out',
+        metavar='FILE_NAME',
         help='name of output file (w/o ext)')
     ap.add_argument('-c', '--codec', default='mp4v',
+        metavar='FOURCC',
         help='fourcc coded for output file')
     ap.add_argument('-e', '--ext', default='.mp4',
         help='ext (container) for output file')
