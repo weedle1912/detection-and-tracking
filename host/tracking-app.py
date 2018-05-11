@@ -110,7 +110,7 @@ def run(args):
         # Display frame
         if args['write']:
             out.write(frame)
-        cv2.imshow('Frame: %dx%d'%(args['size'][0],args['size'][1]), frame)
+        cv2.imshow('Frame: %dx%d, %d FPS'%(args['size'][0],args['size'][1], FPS), frame)
         if cv2.waitKey(1) == 27: # Exit with 'esc' key
             break
     
