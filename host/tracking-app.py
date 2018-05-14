@@ -18,7 +18,6 @@ MODEL_NAMES = [
 ]
 LABEL_NAME = 'mscoco_label_map'
 NUM_CLASSES = 90
-FPS = 30
 TRACKER_TIMEOUT_SEC = 1.5
 
 def run(args):
@@ -29,7 +28,7 @@ def run(args):
     labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
 
     print('[i] Init.')
-    cap = VideoCaptureAsync(args['input'], args['size'][0], args['size'][1], FPS)
+    cap = VideoCaptureAsync(args['input'], args['size'][0], args['size'][1], args['fps'])
     detector = Detector(cap, model_path, labels_path, NUM_CLASSES)
     tracker = Tracker()
     ok, blank = cap.read()
@@ -47,7 +46,7 @@ def run(args):
         fourcc = cv2.VideoWriter_fourcc(*args['codec'])
         file_name = '%s%s'%(args['output'], args['ext'])
         print('[i] Output: %s (c: %s)'%(file_name, args['codec']))
-        out = cv2.VideoWriter(file_name, fourcc, FPS, (args['size'][0], args['size'][1]))
+        out = cv2.VideoWriter(file_name, fourcc, args['fps'], (args['size'][0], args['size'][1]))
     file_csv = open(args['output']+'.csv', 'w')
 
     detector.start()
@@ -118,7 +117,7 @@ def run(args):
         # Display frame
         if args['write']:
             out.write(frame)
-        cv2.imshow('Frame: %dx%d, %d FPS'%(args['size'][0],args['size'][1], FPS), frame)
+        cv2.imshow('Frame: %dx%d, %.1f FPS'%(args['size'][0],args['size'][1], args['fps']), frame)
         if cv2.waitKey(1) == 27: # Exit with 'esc' key
             break
     
@@ -133,6 +132,7 @@ def print_settings(args):
     print('--- Source ---')
     print('* Input:     ' + str(args['input']))
     print('* Size:      %dx%d'%(args['size'][0], args['size'][1]))
+    print('* FPS:       %.1f'%args['fps'])
     print('--- Detector ---')
     print('* Model:     ' + str(args['model']))
     print('* Labels:    ' + str(args['label']))
@@ -154,6 +154,8 @@ if __name__ == '__main__':
     ap.add_argument('-s', '--size', nargs=2, type=int, default=[640,480], 
         metavar=('WIDTH', 'HEIGHT'),
         help='video frame size')
+    ap.add_argument('-f', '--fps', type=float, default=30,
+        help='video playback rate')
     ap.add_argument('-m', '--model', default='ssd_mobilenet_v2_coco_2018_03_29',
         metavar='MODEL_NAME',
         help='name of inference model')
