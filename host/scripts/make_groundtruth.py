@@ -27,7 +27,7 @@ def main(args):
         ok, frame = cap.read()
         if not ok:
             break
-        cv2.resize(frame, (args['size'][0], args['size'][1]), interpolation=cv2.INTER_AREA)
+        frame = cv2.resize(frame, (args['size'][0], args['size'][1]), interpolation=cv2.INTER_AREA)
 
         # Select bounding box in frame
         win_name = 'Frame: %d'%frame_count
