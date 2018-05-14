@@ -53,7 +53,6 @@ class Detector:
             self.thread.join()
     
     def run(self):
-        first_detection = True
         with self.graph.as_default():
             with tf.Session() as sess:
                 # Get handles to input and output tensors
@@ -85,10 +84,9 @@ class Detector:
                         self.fps = fps
                     self.new_detection.set()
 
-                    # Wait for cap start when first detection
-                    if first_detection:
-                        self.cap.wait()
-                        first_detection = False
+                    # Wait for new frame for next detection
+                    self.cap.wait()
+
         self.running = False
     
     def get_detections(self):
