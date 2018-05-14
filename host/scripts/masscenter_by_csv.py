@@ -59,7 +59,7 @@ if __name__ == '__main__':
         help='path to result file')
     ap.add_argument('-t', '--truth', required=True,
         help='path to ground truth file')
-    ap.add_argument('-o', '--output', default='iou_out.csv',
+    ap.add_argument('-o', '--output', default='mc_out.csv',
         help='path to output file')
     
     args = vars(ap.parse_args())
