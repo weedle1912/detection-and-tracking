@@ -43,16 +43,20 @@ def run(args):
 
     # Create out file
     if args['write']:
+        # Video
         fourcc = cv2.VideoWriter_fourcc(*args['codec'])
         file_name = '%s%s'%(args['output'], args['ext'])
         print('[i] Output: %s (c: %s)'%(file_name, args['codec']))
         out = cv2.VideoWriter(file_name, fourcc, args['fps'], (args['size'][0], args['size'][1]))
-    file_csv = open(args['output']+'.csv', 'w')
+        # Comma Separated Values
+        file_csv = open(args['output']+'.csv', 'w')
 
     detector.start()
     detector.wait() # First detection is slow
     cap.start()
     
+    print('[i] Press "Esc" key to stop.')
+
     time_d = time.time()  # Time since last detection
     bbox_buffer = [()]*10 # For bbox stabilization
 
@@ -91,12 +95,6 @@ def run(args):
         if (time.time()-time_d > TRACKER_TIMEOUT_SEC):
             bbox_t = ()
         bbox_s, bbox_buffer = bbox_utils.bbox_stabilize(bbox_t, bbox_buffer)
-        # Write normalized bbox to file
-        bbox_n = bbox_utils.bbox_normalize(bbox_s, args['size'][0], args['size'][1], 4)
-        if bbox_n:
-            file_csv.write( str(bbox_n[0])+','+str(bbox_n[1])+','+str(bbox_n[2])+','+str(bbox_n[3])+'\n' )
-        else:
-            file_csv.write('()\n')
 
         if not bbox_s:
             no_track = True
@@ -116,7 +114,11 @@ def run(args):
 
         # Display frame
         if args['write']:
+            # Video
             out.write(frame)
+            # CSV (normalized bbox)
+            line = make_csv_line(bbox_s, args['size'][0], args['size'][1])
+            file_csv.write(line)
         cv2.imshow('Frame: %dx%d, %.1f FPS'%(args['size'][0],args['size'][1], args['fps']), frame)
         if cv2.waitKey(1) == 27: # Exit with 'esc' key
             break
@@ -125,7 +127,7 @@ def run(args):
     cap.stop()
     if args['write']:
         out.release()
-    file_csv.close()
+        file_csv.close()
     cv2.destroyAllWindows()   
 
 def print_settings(args):
@@ -144,6 +146,14 @@ def print_settings(args):
         print('* File:      ' + str(args['output']) + str(args['ext']))
         print('* Codec:     ' + str(args['codec']))
     print
+
+def make_csv_line(bbox, width, height):
+    bbox_n = bbox_utils.bbox_normalize(bbox, width, height, 4)
+    if bbox_n:
+        line = str(bbox_n[0])+','+str(bbox_n[1])+','+str(bbox_n[2])+','+str(bbox_n[3])+'\n'
+    else:
+        line = '()\n'
+    return line
 
 if __name__ == '__main__':
     # Parse arguments
