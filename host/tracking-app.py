@@ -46,7 +46,6 @@ def run(args):
         # Video
         fourcc = cv2.VideoWriter_fourcc(*args['codec'])
         file_name = '%s%s'%(args['output'], args['ext'])
-        print('[i] Output: %s (c: %s)'%(file_name, args['codec']))
         out = cv2.VideoWriter(file_name, fourcc, args['fps'], (args['size'][0], args['size'][1]))
         # Comma Separated Values
         file_csv = open(args['output']+'.csv', 'w')
