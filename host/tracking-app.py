@@ -103,6 +103,11 @@ def run(args):
         # Get FPS
         FPS_d = detector.get_fps()
         FPS_t = tracker.get_fps()
+        # Check FPS dependency limit
+        if int(FPS_t) > 0 and int(FPS_d) > 0:
+            limit = args['fps']**2/FPS_d
+            if FPS_t < limit:
+                print('[!] Warning: FPS_t = '+('%d'%FPS_t).rjust(3)+' is too slow (limit = '+('%d).'%limit).rjust(3))
 
         # Frame overlay
         #draw_utils.draw_bbox(frame, bbox_d, target_class, 'green') # Detection - green
