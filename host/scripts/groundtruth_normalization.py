@@ -4,9 +4,12 @@ def main(args):
     width, height = args['size']
     f_in = open(args['input'], 'r')
     f_out = open(args['output'], 'w')
-    for line in f_in:
-        stripped = ''.join(c for c in line if c in ',.0123456789')
-        x, y, w, h = stripped.split(',')
+    for line in f_in.readlines():
+        if ',' not in line:
+            x,y,w,h = line.strip().split()
+        else:
+            stripped = ''.join(c for c in line if c in ',.0123456789')
+            x, y, w, h = stripped.split(',')
         f_out.write( '%.4f,%.4f,%.4f,%.4f\n'%(float(x)/width, float(y)/height, float(w)/width, float(h)/height) )
     f_in.close()
     f_out.close()
