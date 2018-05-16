@@ -4,3 +4,5 @@
 host/res
 host/val/*
 !host/val/*.sh
+!host/val/cvlab/cvlab_setup.sh
+!host/val/cvlab/list.txt
