@@ -2,35 +2,32 @@ import os
 import math
 import argparse
 
-FRAME_SIZE = (640,480)
-VID_SIZE = (1280,720)
-
 def main(args):
-    file_r = open(args['result'], 'r')
-    file_t = open(args['truth'], 'r')
+    f1 = open(args['file'][0], 'r')
+    f2 = open(args['file'][1], 'r')
     file_out = open(args['output'], 'w')
 
-    bboxes_r = []
-    for line in file_r:
-        bboxes_r.append(line_to_bbox(line))
-    bboxes_t = []
-    for line in file_t:
-        bboxes_t.append(line_to_bbox(line, VID_SIZE))
+    bboxes1 = []
+    for line in f1:
+        bboxes1.append(line_to_bbox(line))
+    bboxes2 = []
+    for line in f2:
+        bboxes2.append(line_to_bbox(line))
     
     error_total = []
-    n = min(len(bboxes_r), len(bboxes_t))
+    n = min(len(bboxes1), len(bboxes2))
     for i in range(n):
-        value = compare_center(bboxes_r[i], bboxes_t[i])
+        value = compare_center(bboxes1[i], bboxes2[i])
         error_total.append(value)
         file_out.write(str(value)+'\n')
     
     print('Avg. L2 error: %.2f'%(sum(error_total)/n*100))
 
-    file_r.close()
-    file_t.close()
+    f1.close()
+    f2.close()
     file_out.close()
 
-def line_to_bbox(line, vid_size=FRAME_SIZE, frame_size=FRAME_SIZE):
+def line_to_bbox(line):
     line = line.strip()
     if line == '()':
         return ()
@@ -55,10 +52,8 @@ def compare_center(b1, b2):
 if __name__ == '__main__':
     # Parse arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument('-r', '--result', required=True,
-        help='path to result file')
-    ap.add_argument('-t', '--truth', required=True,
-        help='path to ground truth file')
+    ap.add_argument('-f', '--file', required=True, nargs=2,
+        help='path to csv files')
     ap.add_argument('-o', '--output', default='mc_out.csv',
         help='path to output file')
     
