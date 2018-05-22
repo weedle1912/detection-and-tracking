@@ -122,9 +122,10 @@ def run(args):
             # CSV (normalized bbox)
             line = make_csv_line(bbox_s, args['size'][0], args['size'][1])
             file_csv.write(line)
-        cv2.imshow('Frame: %dx%d, %.1f FPS'%(args['size'][0],args['size'][1], args['fps']), frame)
-        if cv2.waitKey(1) == 27: # Exit with 'esc' key
-            break
+        else:
+            cv2.imshow('Frame: %dx%d, %.1f FPS'%(args['size'][0],args['size'][1], args['fps']), frame)
+            if cv2.waitKey(1) == 27: # Exit with 'esc' key
+                break
     
     detector.stop()
     cap.stop()
