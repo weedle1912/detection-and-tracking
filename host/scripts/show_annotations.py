@@ -36,7 +36,6 @@ def main(args):
         if not ok: 
             break
         frame = cv2.resize(frame, (args['size'][0], args['size'][1]), interpolation=cv2.INTER_AREA)
-        #cv2.rectangle(img,(xb,yb),(xb+wb,yb+hb),BGR[color],-1) 
         cv2.putText(frame,'Frame: %04d'%(i+1),(10,20), cv2.FONT_HERSHEY_PLAIN, 1,(255,255,255),1,cv2.LINE_AA)
         for j in range(len(series)):
             bbox = series[j][i]
@@ -77,4 +76,3 @@ if __name__ == '__main__':
     args = vars(ap.parse_args())   
 
     main(args)
-    
