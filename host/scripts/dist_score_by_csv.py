@@ -14,14 +14,22 @@ def main(args):
     for line in f2:
         bboxes2.append(line_to_bbox(line))
     
-    error_total = []
+    index_start = 0
+    for i in range(len(bboxes2)):
+        if bboxes2[i]:
+            index_start = i
+            break
+
+    score_total = []
     n = min(len(bboxes1), len(bboxes2))
     for i in range(n):
-        value = compare_center(bboxes1[i], bboxes2[i])
-        error_total.append(value)
-        file_out.write(str(value)+'\n')
+        score = distance_score(bboxes1[i], bboxes2[i])
+        # Sum score from first track
+        if i >= index_start:
+            score_total.append(score)
+        file_out.write(str(score)+'\n')
     
-    print('Avg. L2 error: %.2f'%(sum(error_total)/n*100))
+    print('Avg. distance score: %.2f'%(sum(score_total)/len(score_total)*100))
 
     f1.close()
     f2.close()
@@ -34,38 +42,30 @@ def line_to_bbox(line):
     x, y, w, h = line.split(',')
     return (float(x), float(y), float(w), float(h))
 
-def compare_center(b1,b2):
+def distance_score(b1,b2):
     if not b1 and not b2:
-        return 0.00
-    if not b1 or not b2:
         return 1.00
-    cx1 = b1[0] + b1[2]//2
-    cy1 = b1[1] + b1[3]//2
-    cx2 = b2[0] + b2[2]//2
-    cy2 = b2[1] + b2[3]//2
-    # For x dir
-    if cx1 < b2[0] or cx1 > (b2[0]+b2[2]):
-        ex = 1.00
-    else:
-        ex = abs(cx1-cx2)
-    # For y dir
-    if cy1 < b2[1] or cy1 > (b2[1]+b2[3]):
-        ey = 1.00
-    else:
-        ey = abs(cy1-cy2)
-    # Find error
-    if ex >= ey:
-        error = float(ex)/(b2[2]//2)
-    else:
-        error = float(ey)/(b2[3]//2)
-    
-    return round( error , 4 )
+    if not b1 or not b2:
+        return 0.00
+    cx1 = b1[0] + b1[2]/2
+    cy1 = b1[1] + b1[3]/2
+    cx2 = b2[0] + b2[2]/2
+    cy2 = b2[1] + b2[3]/2
+    w = b1[2]
+    h = b1[3]
+
+    ex = abs(cx1-cx2)
+    ey = abs(cy1-cy2)
+
+    S = 1.00 - min( max(2.0*ex/w, 2.0*ey/h), 1.00)
+    return round( S , 4 )
 
 
 if __name__ == '__main__':
     # Parse arguments
     ap = argparse.ArgumentParser()
     ap.add_argument('-f', '--file', required=True, nargs=2,
+        metavar=('FILE_GT', 'FILE'),
         help='path to csv files')
     ap.add_argument('-o', '--output', default='mc_out.csv',
         help='path to output file')
