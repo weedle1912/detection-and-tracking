@@ -13,15 +13,22 @@ def main(args):
     bboxes2 = []
     for line in f2:
         bboxes2.append(line_to_bbox(line))
+
+    index_start = 0
+    for i in range(len(bboxes2)):
+        if bboxes2[i]:
+            index_start = i
+            break
     
     iou_total = []
     n = min(len(bboxes1), len(bboxes2))
     for i in range(n):
         value = iou(bboxes1[i], bboxes2[i])
-        iou_total.append(value)
+        if i >= index_start:
+            iou_total.append(value)
         file_out.write(str(value)+'\n')
     
-    print('Avg. iou: %.2f'%(sum(iou_total)/n*100))
+    print('Avg. iou: %.2f'%(sum(iou_total)/len(iou_total)*100))
 
     f1.close()
     f2.close()
@@ -58,6 +65,7 @@ if __name__ == '__main__':
     # Parse arguments
     ap = argparse.ArgumentParser()
     ap.add_argument('-f', '--file', required=True, nargs=2,
+        metavar=('FILE_GT', 'FILE'),
         help='path to csv files')
     ap.add_argument('-o', '--output', default='iou_out.csv',
         help='path to output file')
