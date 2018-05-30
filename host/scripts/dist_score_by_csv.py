@@ -67,7 +67,7 @@ if __name__ == '__main__':
     ap.add_argument('-f', '--file', required=True, nargs=2,
         metavar=('FILE_GT', 'FILE'),
         help='path to csv files')
-    ap.add_argument('-o', '--output', default='mc_out.csv',
+    ap.add_argument('-o', '--output', default='ds_out.csv',
         help='path to output file')
     
     args = vars(ap.parse_args())
