@@ -3,13 +3,15 @@ import cv2
 import time
 import argparse
 
-from detector.detector import Detector
-from detector.videocapture import VideoCaptureAsync
-from tracker.tracker import Tracker
+# Modules
+from src.videocapture import VideoCaptureAsync
+from src.detector.detector import Detector
+from src.tracker.tracker import Tracker
 
-import utils.draw as draw_utils
-import utils.bbox as bbox_utils
-import utils.ascii_art as art_utils
+# Utilities
+import src.utils.draw as draw_utils
+import src.utils.bbox as bbox_utils
+import src.utils.ascii_art as art_utils
 
 MODEL_NAMES = [
     'ssd_inception_v2_coco_2017_11_17',
@@ -23,9 +25,9 @@ TRACKER_TIMEOUT_SEC = 1.5
 def run(args):
     cwd = os.getcwd()
     # Path to checkpoint (ckpt)
-    model_path = os.path.join(cwd, 'detector', 'models', args['model'], 'frozen_inference_graph.pb')
+    model_path = os.path.join(cwd, 'src', 'detector', 'models', args['model'], 'frozen_inference_graph.pb')
     # Path to label names
-    labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
+    labels_path = os.path.join(cwd, 'src', 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
 
     print('[i] Init.')
     cap = VideoCaptureAsync(args['input'], args['size'][0], args['size'][1], args['fps'])
@@ -165,6 +167,12 @@ if __name__ == '__main__':
     ap.add_argument('-i', '--input', default='../videos/HobbyKing.mp4',
         metavar='SRC',
         help='path to video source')
+    ap.add_argument('-t', '--target', default='airplane',
+        metavar='TARGET_CLASS',
+        help='target class to track')
+    ap.add_argument('-th', '--threshold', type=int, default=50,
+        metavar='SCORE',
+        help='detection score threshold (0-100)')
     ap.add_argument('-s', '--size', nargs=2, type=int, default=[640,480], 
         metavar=('WIDTH', 'HEIGHT'),
         help='video frame size')
@@ -176,27 +184,22 @@ if __name__ == '__main__':
     ap.add_argument('-l', '--label', default='mscoco_label_map',
         metavar='LABEL_NAME',
         help='name of label file')
-    ap.add_argument('-t', '--target', default='airplane',
-        metavar='TARGET_NAME',
-        help='target class to track')
-    ap.add_argument('-th', '--threshold', type=int, default=50,
-        metavar='PERCENT',
-        help='detection score threshold (0-100)')
     ap.add_argument('-w', '--write', action='store_true',
-        help='wether or not to write result to file')
+        help='wether to write results to file')
     ap.add_argument('-o', '--output', default='out',
         metavar='FILE_NAME',
         help='name of output file (w/o ext)')
     ap.add_argument('-c', '--codec', default='mp4v',
         metavar='FOURCC',
-        help='fourcc coded for output file')
+        help='fourcc codec for output file')
     ap.add_argument('-e', '--ext', default='.mp4',
         help='ext (container) for output file')
     args = vars(ap.parse_args())
     # Run
     os.system('clear')
+    art_utils.printAsciiArt('Autonomous')
     art_utils.printAsciiArt('Tracking')
-    print('Tracker v1.0.0 (C) weedle1912\n')
+    print('tracking-app v1.0.0 (C) weedle1912\n')
     print_settings(args)
     print('--- Running app:')
     run(args)

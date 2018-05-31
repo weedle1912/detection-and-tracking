@@ -1,29 +1,44 @@
 ## Host: PC with Linux
 ### 1. Description
 #### Purpose:
-Deep learning and data processing.
+Object tracking application running on host computer.
 
 #### Requirements:
 * Ubuntu 16.04
-* TensorFlow 1.7
-* TensorRT 3.0
+* TensorFlow 1.8
+* Protobuf 3.0
+* Google's object_detection API
+* OpenCV-contrib for tracking API
 
 ### 2. Setup
-#### 2.1 Install TensorRT 3.0
-1. Go to: https://developer.nvidia.com/nvidia-tensorrt-download  
-(Requires [NVIDIA Developer Program](https://developer.nvidia.com/developer-program) membership)
-2. Download the debian install package for TensorRT 3.0 for CUDA 9.0
-3. Install TensorRT from the debian package:  
+#### 2.1 Install the newest version of Protobuf    
 ```
-$ sudo dpkg -i nv-tensorrt-repo-ubuntu1604-cuda9.0-rc-trt4.x.x.x-yyyymmdd_1-1_amd64.deb  
-$ sudo apt-get update  
-$ sudo apt-get install tensorrt
+$ curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+$ unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
+$ sudo mv protoc3/bin/* /usr/local/bin/
+$ sudo mv protoc3/include/* /usr/local/include/
+$ rm -r protoc*
 ```
-4. Install Python 2.7 Nvidia infer library:
+#### 2.2 Install virtual environment    
 ```
-$ sudo apt-get install python-libnvinfer-doc swig
+$ sudo apt-get install -y python-pip python-dev python-virtualenv
 ```
-5. Install the TF to UFF converter:
+#### 2.3 Run the setup script    
 ```
-$ sudo apt-get install uff-converter-tf
+$ chmod +x ./scripts/env_setup.sh
+$ ./scripts/env_setup.sh
+```
+
+#### 2.4 Compile Protobuf libraries
+```
+$ cd src/detector
+$ sudo protoc object_detection/protos/*.proto --python_out=.
+$ cd ../..
+```
+
+### 3. Run
+Activate the virtual environment, and run application:    
+```
+$ source ~/tensorflow/bin/activate
+(tensorflow)$ python tracking-app.py
 ```
