@@ -4,9 +4,10 @@
 host/res
 
 # Test folder
-host/val/*
-host/val/*/*
-!host/val/vot2017/*vot2017_setup.sh
-!host/val/vot2017/*list.txt
-!host/val/cvlab/*cvlab_setup.sh
-!host/val/cvlab/*list.txt
+host/test/*
+host/test/*/*
+!host/test/*README.md
+!host/test/vot2017/*vot2017_setup.sh
+!host/test/vot2017/*list.txt
+!host/test/cvlab/*cvlab_setup.sh
+!host/test/cvlab/*list.txt
