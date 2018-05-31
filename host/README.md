@@ -19,17 +19,17 @@ $ sudo mv protoc3/bin/* /usr/local/bin/
 $ sudo mv protoc3/include/* /usr/local/include/
 $ rm -r protoc*
 ```
-### 2.2 Install virtual environment    
+#### 2.2 Install virtual environment    
 ```
 $ sudo apt-get install -y python-pip python-dev python-virtualenv
 ```
-### 2.3 Run the setup script    
+#### 2.3 Run the setup script    
 ```
 $ chmod +x ./scripts/env_setup.sh
 $ ./scripts/env_setup.sh
 ```
 
-### 2.4 Compile Protobuf libraries
+#### 2.4 Compile Protobuf libraries
 ```
 $ cd src/detector
 $ sudo protoc object_detection/protos/*.proto --python_out=.
