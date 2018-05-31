@@ -9,21 +9,14 @@ Deep learning and data processing.
 * TensorRT 3.0
 
 ### 2. Setup
-#### 2.1 Install TensorRT 3.0
-1. Go to: https://developer.nvidia.com/nvidia-tensorrt-download  
-(Requires [NVIDIA Developer Program](https://developer.nvidia.com/developer-program) membership)
-2. Download the debian install package for TensorRT 3.0 for CUDA 9.0
-3. Install TensorRT from the debian package:  
+#### 2.1 Download TensorFlow object_detection API
+The TensorFlow object_detection is available on GitHub, and can be downloaded from:    
+https://github.com/tensorflow/models/tree/master/research/object_detection    
+
+Store the API in a folder 'object_detection' in 'src/detector/'
+
+#### 2.2 Install the OpenCV-contrib package, for tracking API
+The contrib package can be installed with pip:    
 ```
-$ sudo dpkg -i nv-tensorrt-repo-ubuntu1604-cuda9.0-rc-trt4.x.x.x-yyyymmdd_1-1_amd64.deb  
-$ sudo apt-get update  
-$ sudo apt-get install tensorrt
-```
-4. Install Python 2.7 Nvidia infer library:
-```
-$ sudo apt-get install python-libnvinfer-doc swig
-```
-5. Install the TF to UFF converter:
-```
-$ sudo apt-get install uff-converter-tf
-```
+$ pip install opencv-contrib-python
+```  

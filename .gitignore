@@ -11,3 +11,6 @@ host/test/*/*
 !host/test/vot2017/*list.txt
 !host/test/cvlab/*cvlab_setup.sh
 !host/test/cvlab/*list.txt
+
+# TensorFlow object_detection API
+/host/src/detector/object_detection/
