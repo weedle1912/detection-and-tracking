@@ -1,7 +1,7 @@
 import cv2
 from tracker import Tracker
 
-VIDEO_PATH = "../../videos/HobbyKing.mp4"
+VIDEO_PATH = "../../../videos/HobbyKing.mp4"
 
 def main():
     cap = cv2.VideoCapture(VIDEO_PATH)

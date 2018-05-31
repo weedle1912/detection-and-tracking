@@ -3,13 +3,15 @@ import cv2
 import time
 import argparse
 
-from detector.detector import Detector
-from detector.videocapture import VideoCaptureAsync
-from tracker.tracker import Tracker
+# Modules
+from src.videocapture import VideoCaptureAsync
+from src.detector.detector import Detector
+from src.tracker.tracker import Tracker
 
-import utils.draw as draw_utils
-import utils.bbox as bbox_utils
-import utils.ascii_art as art_utils
+# Utilities
+import src.utils.draw as draw_utils
+import src.utils.bbox as bbox_utils
+import src.utils.ascii_art as art_utils
 
 MODEL_NAMES = [
     'ssd_inception_v2_coco_2017_11_17',
@@ -23,9 +25,9 @@ TRACKER_TIMEOUT_SEC = 1.5
 def run(args):
     cwd = os.getcwd()
     # Path to checkpoint (ckpt)
-    model_path = os.path.join(cwd, 'detector', 'models', args['model'], 'frozen_inference_graph.pb')
+    model_path = os.path.join(cwd, 'src', 'detector', 'models', args['model'], 'frozen_inference_graph.pb')
     # Path to label names
-    labels_path = os.path.join(cwd, 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
+    labels_path = os.path.join(cwd, 'src', 'detector', 'object_detection', 'data', args['label'] + '.pbtxt')
 
     print('[i] Init.')
     cap = VideoCaptureAsync(args['input'], args['size'][0], args['size'][1], args['fps'])

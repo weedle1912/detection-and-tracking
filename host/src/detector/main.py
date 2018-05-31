@@ -5,7 +5,6 @@ import time
 
 from detector import Detector
 from videocapture import VideoCaptureAsync
-import ascii_art as art
 
 MODEL_NAMES = [
     'ssd_inception_v2_coco_2017_11_17',
@@ -14,7 +13,7 @@ MODEL_NAMES = [
 ]
 LABEL_NAME = 'mscoco_label_map'
 NUM_CLASSES = 90
-VIDEO_FILE = '../../videos/HobbyKing.mp4'
+VIDEO_FILE = '../../../videos/HobbyKing.mp4'
 FRAME_WIDTH = 640
 FRAME_HEIGHT = 480
 FPS = 30
@@ -60,7 +59,4 @@ def draw_detections(img, det_dict):
         cv2.rectangle(img,bbox[0],bbox[1],(255,0,0),2)
 
 if __name__ == '__main__':
-    os.system('clear')
-    art.printAsciiArt('Detection')
-    print('v1.0.0 (C) weedle1912')
     app()
