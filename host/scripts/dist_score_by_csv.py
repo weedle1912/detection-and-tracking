@@ -13,23 +13,15 @@ def main(args):
     bboxes2 = []
     for line in f2:
         bboxes2.append(line_to_bbox(line))
-    
-    index_start = 0
-    for i in range(len(bboxes2)):
-        if bboxes2[i]:
-            index_start = i
-            break
 
     score_total = []
     n = min(len(bboxes1), len(bboxes2))
     for i in range(n):
         score = distance_score(bboxes1[i], bboxes2[i])
-        # Sum score from first track
-        if i >= index_start:
-            score_total.append(score)
+        score_total.append(score)
         file_out.write(str(score)+'\n')
     
-    print('Avg. distance score: %.2f'%(sum(score_total)/len(score_total)*100))
+    print('Avg. distance score: %.2f'%(sum(score_total)/n*100))
 
     f1.close()
     f2.close()
