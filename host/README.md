@@ -1,22 +1,44 @@
 ## Host: PC with Linux
 ### 1. Description
 #### Purpose:
-Deep learning and data processing.
+Object tracking application running on host computer.
 
 #### Requirements:
 * Ubuntu 16.04
-* TensorFlow 1.7
-* TensorRT 3.0
+* TensorFlow 1.8
+* Protobuf 3.0
+* Google's object_detection API
+* OpenCV-contrib for tracking API
 
 ### 2. Setup
-#### 2.1 Download TensorFlow object_detection API
-The TensorFlow object_detection is available on GitHub, and can be downloaded from:    
-https://github.com/tensorflow/models/tree/master/research/object_detection    
-
-Store the API in a folder 'object_detection' in 'src/detector/'
-
-#### 2.2 Install the OpenCV-contrib package, for tracking API
-The contrib package can be installed with pip:    
+#### 2.1 Install the newest version of Protobuf    
 ```
-$ pip install opencv-contrib-python
-```  
+$ curl -OL https://github.com/google/protobuf/releases/download/v3.2.0/protoc-3.2.0-linux-x86_64.zip
+$ unzip protoc-3.2.0-linux-x86_64.zip -d protoc3
+$ sudo mv protoc3/bin/* /usr/local/bin/
+$ sudo mv protoc3/include/* /usr/local/include/
+$ rm -r protoc*
+```
+### 2.2 Install virtual environment    
+```
+$ sudo apt-get install -y python-pip python-dev python-virtualenv
+```
+### 2.3 Run the setup script    
+```
+$ chmod +x ./scripts/env_setup.sh
+$ ./scripts/env_setup.sh
+```
+
+### 2.4 Compile Protobuf libraries
+```
+$ cd src/detector
+$ sudo protoc object_detection/protos/*.proto --python_out=.
+$ cd ../..
+```
+
+### 3. Run
+Activate the virtual environment, and run application:    
+```
+$ source ~/tensorflow/bin/activate
+(tensorflow)$ python tracking-app.py
+```
