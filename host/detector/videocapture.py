@@ -21,7 +21,6 @@ class VideoCaptureAsync:
         self.frame_buffer = []
         self.started = False
         self.new_frame = threading.Event()
-        self.buffer_lock = threading.Lock()
         self.read_lock = threading.Lock()
         self.thread_capture = threading.Thread(name='Video Capture', target=self.update, args=())
         # For timing
@@ -52,10 +51,11 @@ class VideoCaptureAsync:
             if grabbed:
                 frame = cv2.resize(frame, (self.width, self.height), interpolation=cv2.INTER_AREA)
             with self.read_lock:
-                self.grabbed = grabbed
+                # Old frame in buffer
+                self.frame_buffer.append(self.frame)
+                # Update with new frame
                 self.frame = frame
-            with self.buffer_lock:
-                self.frame_buffer.append(frame)
+                self.grabbed = grabbed
             self.new_frame.set()
             # Wait for next time tick
             self.timer.wait(1)
@@ -83,13 +83,13 @@ class VideoCaptureAsync:
         return grabbed, frame
 
     def read_frame_buffer(self):
-        with self.buffer_lock:
+        with self.read_lock:
             buffer = copy.deepcopy(self.frame_buffer)
             self.frame_buffer = []
         return buffer
     
     def clear_frame_buffer(self):
-        with self.buffer_lock:
+        with self.read_lock:
             self.frame_buffer = []
 
     def stop(self):

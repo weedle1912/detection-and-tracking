@@ -83,6 +83,10 @@ class Detector:
                         self.isNew = True
                         self.fps = fps
                     self.new_detection.set()
+
+                    # Wait for new frame for next detection
+                    self.cap.wait()
+
         self.running = False
     
     def get_detections(self):
