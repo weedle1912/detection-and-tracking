@@ -167,6 +167,12 @@ if __name__ == '__main__':
     ap.add_argument('-i', '--input', default='../videos/HobbyKing.mp4',
         metavar='SRC',
         help='path to video source')
+    ap.add_argument('-t', '--target', default='airplane',
+        metavar='TARGET_CLASS',
+        help='target class to track')
+    ap.add_argument('-th', '--threshold', type=int, default=50,
+        metavar='SCORE',
+        help='detection score threshold (0-100)')
     ap.add_argument('-s', '--size', nargs=2, type=int, default=[640,480], 
         metavar=('WIDTH', 'HEIGHT'),
         help='video frame size')
@@ -178,27 +184,22 @@ if __name__ == '__main__':
     ap.add_argument('-l', '--label', default='mscoco_label_map',
         metavar='LABEL_NAME',
         help='name of label file')
-    ap.add_argument('-t', '--target', default='airplane',
-        metavar='TARGET_NAME',
-        help='target class to track')
-    ap.add_argument('-th', '--threshold', type=int, default=50,
-        metavar='PERCENT',
-        help='detection score threshold (0-100)')
     ap.add_argument('-w', '--write', action='store_true',
-        help='wether or not to write result to file')
+        help='wether to write results to file')
     ap.add_argument('-o', '--output', default='out',
         metavar='FILE_NAME',
         help='name of output file (w/o ext)')
     ap.add_argument('-c', '--codec', default='mp4v',
         metavar='FOURCC',
-        help='fourcc coded for output file')
+        help='fourcc codec for output file')
     ap.add_argument('-e', '--ext', default='.mp4',
         help='ext (container) for output file')
     args = vars(ap.parse_args())
     # Run
     os.system('clear')
+    art_utils.printAsciiArt('Autonomous')
     art_utils.printAsciiArt('Tracking')
-    print('Tracker v1.0.0 (C) weedle1912\n')
+    print('tracking-app v1.0.0 (C) weedle1912\n')
     print_settings(args)
     print('--- Running app:')
     run(args)
