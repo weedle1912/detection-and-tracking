@@ -2,7 +2,6 @@
 
 # Store current directory
 CWD=${PWD}
-mkdir vot2017
 
 # Check if downloaded
 if ! [ -f ${HOME}/Downloads/vot2017.zip ]; then
@@ -19,11 +18,11 @@ cd ${CWD}
 # Construct videos from images in folders
 while read f; do
     echo Constructing video: ${f}
-    if [ -f vot2017/${f}/${f}.mp4 ]; then
-        echo vot2017/${f}/${f}.mp4 exists
+    if [ -f ${f}/${f}.mp4 ]; then
+        echo ${f}/${f}.mp4 exists
     else
-        mkdir vot2017/${f}
-        python ../scripts/images_to_video.py -d ${HOME}/Downloads/vot2017/${f}/ -o vot2017/${f}/${f}
-        cp ${HOME}/Downloads/vot2017/${f}/groundtruth.txt ./vot2017/${f}
+        mkdir ${f}
+        python ${CWD}/../../scripts/images_to_video.py -d ${HOME}/Downloads/vot2017/${f}/ -o ${CWD}/${f}/${f}
+        cp ${HOME}/Downloads/vot2017/${f}/groundtruth.txt ${CWD}/${f}
     fi
-done <${HOME}/Downloads/vot2017/list.txt
+done <${CWD}/list.txt
