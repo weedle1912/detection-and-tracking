@@ -5,6 +5,7 @@ host/res
 
 # Test folder
 host/val/*
+host/val/*/*
 !host/val/vot2017/*vot2017_setup.sh
 !host/val/vot2017/*list.txt
 !host/val/cvlab/*cvlab_setup.sh
