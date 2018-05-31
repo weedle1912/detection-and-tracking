@@ -19,8 +19,8 @@ A solution to this is to buffer the skipped frames, and retrace this buffer with
 The implementation `host/tracking-app.py`is an _autonomous tracker_ - a real-time tracker with periodic corrections from a deep learning detector.
 
 #### Software Framework
-- TensorFlow: Object Detection API
-- OpenCV: contrib package tracking API
+- TensorFlow: [Google's TensorFlow Object Detection API](https://github.com/tensorflow/models/tree/master/research/object_detection)
+- OpenCV: [OpenCV-contrib-python Object tracking API](https://github.com/opencv/opencv_contrib/tree/master/modules/tracking)
 
 #### Hardware
 - Host: Desktop PC (optional CPU/GPU depending on TensorFlow distribution)
